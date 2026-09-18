@@ -3,10 +3,10 @@
 // the newest announcement wins; a mirror it names is accepted when that mirror's chain.json is
 // signed by the announcer, which is also where the name and comment come from. No host names
 // here: mirrors come from the announcements. Runs in a browser or in Node (the test).
-export const DEFAULT_RELAYS = ['wss://nos.lol', 'wss://relay.damus.io'];
+export const DEFAULT_RELAYS = ['wss://nos.lol', 'wss://relay.damus.io', 'wss://relay.primal.net'];
 export const TIP_KIND = 33333;
 export const CDN = 'https://cdn.jsdelivr.net/gh/bitcoin-desktop/schema@v0.0.27';
-export const LIB = 'https://cdn.jsdelivr.net/gh/sidestr/spec@bb83e1c2c89ee6d0de9d745e6081655887f1ef6e/siding/lib';
+export const LIB = 'https://cdn.jsdelivr.net/gh/sidestr/spec@a964d6b088325f8240e72cac2686c80ddce92563/siding/lib';
 
 // every sidestr announcement the relays hold, deduplicated by event id
 export function fetchTips({ relays = DEFAULT_RELAYS, timeout = 6000, onRelay = () => {} } = {}) {
