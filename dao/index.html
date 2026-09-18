@@ -48,7 +48,7 @@ const MEL = { name: 'melvin', av: 'm', shares: 190000, did: 'did:nostr:npub1me1v
 let HOLD = [MEL, OTHER]; let ME = MEL;
 const HOLDERS = () => [...HOLD].sort((a, b) => b.shares - a.shares); const other = () => HOLDERS().find((h) => h !== ME) ?? ME;
 const hue = (h) => { let x = 0; for (const c of String(h.did ?? h.name)) x = (x * 31 + c.charCodeAt(0)) >>> 0; return x % 360; }; const col = (h) => `hsl(${hue(h)} 70% 60%)`;
-const when = (ms) = ms ? new Date(ms).toISOString().slice(0, 10) : '';
+const when = (ms) => ms ? new Date(ms).toISOString().slice(0, 10) : '';
 // the reads: the Tideholm API (season, holders, ledger) and the treasury address on testnet4 (mempool.guide); both allow browser reads
 async function load() {
   try { const d = await (await fetch(API, { cache: 'no-store' })).json(); S.season = d.season; S.sold = d.sold; S.total = d.supply; S.opened = d.opened; S.ledger = d.ledger ?? [];
