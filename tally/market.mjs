@@ -7,7 +7,7 @@ export const DEFAULTS = {
   lib: 'https://cdn.jsdelivr.net/gh/sidestr/spec@04b691b7ba3135354776f2c15125c53de5ea4452/siding/lib',
   explorer: 'https://cdn.jsdelivr.net/gh/sidestr/explorer@799a74bf67f1578531428ef8ffb9668e1170245b/explorer.mjs',
   wallet: 'https://cdn.jsdelivr.net/gh/sidestr/wallet@04616f0d47ad20b7cc820b1bde196bdbd0a3bb59/wallet.mjs',
-  relays: ['wss://nos.lol', 'wss://relay.damus.io', 'wss://relay.primal.net'],
+  relays: ['wss://nos.lol', 'wss://relay.damus.io', 'wss://relay.primal.net', 'wss://nostr.mom', 'wss://nostr.oxtr.dev'],
 };
 const B = (n) => BigInt(n), N = (b) => Number(b);
 export const FEE_PER_MILLE = 3n;      // the pool rule's fee on what comes in
