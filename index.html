@@ -58,14 +58,14 @@ async function load() {
     if (!rows.length) { $('app').innerHTML = `<div class="boot">no sidestr chain has announced itself on ${esc(relays.join(', '))} yet.</div>`; return; }
     $('app').innerHTML = `<div class="wrap"><table><thead><tr><th>#</th><th>chain</th><th class="hide-sm">parent</th><th class="r">height</th><th class="r">last block</th><th class="r" title="blocks in the last day, counted from the twelve headers in the announcement, so at most 12">24 h</th><th class="hide-sm">signer</th><th>mirror</th><th></th></tr></thead><tbody>${rows.map((r, i) => `<tr>
       <td class="rank">${i + 1}</td>
-      <td><div class="name">${esc(r.name)}</div><div class="mono dim">${esc(r.id)}</div>${r.comment ? `<div class="comment">${esc(r.comment)}</div>` : ''}</td>
+      <td><div class="name">${esc(r.name)}${r.rules.length ? ` <span class="dim" style="font-weight:400;font-size:.8rem">· rules: ${esc(r.rules.join(', '))}</span>` : ''}</div><div class="mono dim">${esc(r.id)}</div>${r.comment ? `<div class="comment">${esc(r.comment)}</div>` : ''}</td>
       <td class="mono hide-sm">${esc(r.parent ?? '—')}</td>
       <td class="r mono">${r.tip.toLocaleString('en-US')}</td>
       <td class="r" title="announced ${ago(r.announcedAt)}">${ago(r.lastBlock)}</td>
       <td class="r mono">${r.blocks24h}</td>
       <td class="mono hide-sm" title="${esc(r.signer)}">${short(r.signer)}${r.announcers > 1 ? ` <span class="bad" title="${r.announcers} keys announce this id; the newest wins">×${r.announcers}</span>` : ''}</td>
       <td class="mono">${r.mirror ? `<a href="${esc(r.mirror)}/chain.json" target="_blank" rel="noopener" title="${esc(r.note)}">${esc(r.mirror.replace(/^https?:\/\//, ''))}</a> <span class="ac">✓</span>` : `<span class="bad" title="${esc(r.note)}">no mirror vouched for</span>`}</td>
-      <td class="links">${r.mirror ? `<a href="${EXPLORER}?chain=${encodeURIComponent(r.id)}" target="_blank" rel="noopener">explorer ↗</a><a href="${WALLET}?chain=${encodeURIComponent(r.id)}" target="_blank" rel="noopener">wallet ↗</a>` : ''}</td>
+      <td class="links">${r.mirror ? `<a href="${EXPLORER}?chain=${encodeURIComponent(r.id)}" target="_blank" rel="noopener">explorer ↗</a><a href="${WALLET}?chain=${encodeURIComponent(r.id)}" target="_blank" rel="noopener">wallet ↗</a>${r.rules.includes('pool') ? `<a href="tally/?chain=${encodeURIComponent(r.id)}">market ↗</a>` : ''}` : ''}</td>
     </tr>`).join('')}</tbody></table></div>`;
   } catch (e) { $('pill').textContent = 'failed'; $('app').innerHTML = `<div class="err">${esc(e.message)}</div>`; console.error(e); }
   finally { $('refresh').disabled = false; }

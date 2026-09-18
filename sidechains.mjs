@@ -42,9 +42,9 @@ export async function listChains({ relays = DEFAULT_RELAYS, lib = LIB, cdn = CDN
   }
   const rows = await Promise.all([...byChain.values()].map(async ({ id, announcers, newest: t }) => {
     const times = t.headersHex.map(headerTime);
-    const row = { id, name: id.replace(/^sidestr:/, ''), parent: null, comment: null, signer: t.pubkey, tip: t.tip, lastBlock: times[times.length - 1] ?? null, blocks24h: times.filter((x) => x > now - 86400).length,
+    const row = { id, name: id.replace(/^sidestr:/, ''), parent: null, comment: null, rules: [], signer: t.pubkey, tip: t.tip, lastBlock: times[times.length - 1] ?? null, blocks24h: times.filter((x) => x > now - 86400).length,
       announcedAt: t.created_at, mirrors: t.mirrors, mirror: null, ok: null, note: null, announcers: announcers.size };
-    try { const f = await chooseMirror({ tip: t, chainId: id, fetchJson }); row.mirror = f.mirror; row.name = f.chain.name ?? row.name; row.parent = f.chain.parent ?? null; row.comment = f.chain.comment ?? null; row.ok = true; row.note = `mirror vouched for by the signer`; }
+    try { const f = await chooseMirror({ tip: t, chainId: id, fetchJson }); row.mirror = f.mirror; row.name = f.chain.name ?? row.name; row.parent = f.chain.parent ?? null; row.comment = f.chain.comment ?? null; row.rules = f.chain.rules ?? []; row.ok = true; row.note = `mirror vouched for by the signer`; }
     catch (e) { row.ok = false; row.note = e.message; }
     return row;
   }));

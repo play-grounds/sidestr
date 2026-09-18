@@ -110,7 +110,7 @@ function swapView() {
     <div class="kv"><span>Pool fee (0.3%)</span><b>${fmtA(from.id, quote.fee)} ${esc(from.ticker)}</b></div>
     <div class="kv"><span>Network fee</span><b>~${m.w.minFeeRate * 260} sats</b></div>
     <div class="kv"><span>Pool after</span><b>${sats(quote.x2)} sats · ${m.fmt(A.id, quote.y2)} ${esc(A.ticker)}</b></div>
-    <div class="kv"><span>Slippage</span><b>none — amounts are exact; if the pool moves first, this is refused at no cost</b></div></details></div>` : ''}
+    <div class="kv"><span>Slippage</span><b title="amounts are exact; if the pool moves first this is refused at no cost">none · exact</b></div></details></div>` : ''}
   <button class="cta ${quote?.impact > 0.15 ? 'warn' : ''}" id="go" ${(!me || !quote || short) ? 'disabled' : ''}>${esc(cta)}</button><div id="out"></div></div>`;
 }
 /* ---------- pool ---------- */
