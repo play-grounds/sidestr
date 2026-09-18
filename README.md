@@ -20,3 +20,11 @@ https://play-grounds.github.io/sidestr/mock/ — a static mockup of a phone-firs
 shape: one balance, plain-words activity with did:nostr names, a send flow that says what will happen
 before the tap, receive, swap, a chain switcher from the directory, settings. Sample data only; nothing
 is live. It exists to be looked at and argued about before the real wallet is redesigned.
+
+## dao/
+
+https://play-grounds.github.io/sidestr/dao/ — a mockup of the Tideholm season DAO
+(tide-games.github.io/dao) on `sidestr:capewars-s6`: season shares as a §12 asset any explorer can
+count, the treasury as coins the chain proves, the close as one pro-rata payout transaction,
+proposals with a veto window instead of a vote one holder decides anyway, and leaving as a peg-out.
+Sample data (a 95/5 split, two holders); a "view as the other player" toggle. Nothing is live.
