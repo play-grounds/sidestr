@@ -27,12 +27,12 @@
   <text x="838" y="182" font-size="16" font-weight="600" fill="#e9edf1">Swap</text>
   <rect x="832" y="200" width="288" height="86" rx="14" fill="#12161b"/>
   <text x="848" y="226" font-size="13" fill="#9aa4b1">Sell</text>
-  <text x="848" y="268" font-size="30" font-weight="600" fill="#e9edf1" letter-spacing="-0.5">2,500,000</text>
+  <text x="848" y="266" font-size="26" font-weight="600" fill="#e9edf1" letter-spacing="-0.5">2,500,000</text>
   <rect x="1022" y="240" width="84" height="34" rx="17" fill="#1d232c" stroke="#2f3844"/><circle cx="1041" cy="257" r="10" fill="#f59e0b"/><text x="1056" y="262" font-size="14" font-weight="600" fill="#e9edf1">sats</text>
   <circle cx="976" cy="296" r="15" fill="#161b22" stroke="#242b35" stroke-width="3"/><path d="M976 289v14m0 0-4-4m4 4 4-4" fill="none" stroke="#9aa4b1" stroke-width="2"/>
   <rect x="832" y="306" width="288" height="86" rx="14" fill="#12161b"/>
   <text x="848" y="332" font-size="13" fill="#9aa4b1">Buy</text>
-  <text x="848" y="374" font-size="30" font-weight="600" fill="#e9edf1" letter-spacing="-0.5">12,159.42</text>
+  <text x="848" y="372" font-size="26" font-weight="600" fill="#e9edf1" letter-spacing="-0.5">12,159.42</text>
   <rect x="1006" y="346" width="100" height="34" rx="17" fill="#1d232c" stroke="#2f3844"/><circle cx="1025" cy="363" r="10" fill="#2dd4bf"/><text x="1040" y="368" font-size="14" font-weight="600" fill="#e9edf1">SHELL</text>
   <text x="838" y="418" font-size="13" fill="#9aa4b1">1 SHELL = 200 sats</text><text x="1114" y="418" text-anchor="end" font-size="13" fill="#fbbf24">2.72% impact</text>
   <rect x="832" y="434" width="288" height="46" rx="14" fill="#2dd4bf"/><text x="976" y="464" text-anchor="middle" font-size="18" font-weight="600" fill="#03211d">Swap</text>
