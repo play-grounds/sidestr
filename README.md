@@ -27,4 +27,4 @@ https://play-grounds.github.io/sidestr/dao/ — a mockup of the Tideholm season 
 (tide-games.github.io/dao) on `sidestr:capewars-s6`: season shares as a §12 asset any explorer can
 count, the treasury as coins the chain proves, the close as one pro-rata payout transaction,
 proposals with a veto window instead of a vote one holder decides anyway, and leaving as a peg-out.
-Sample data (a 95/5 split, two holders); a "view as the other player" toggle. Nothing is live.
+Treasury (mempool.guide, testnet4), holders and the book (the Tideholm API) are read live; proposals, buying and leaving are mocked and labelled. A "view as" toggle shows the other holder's side.
