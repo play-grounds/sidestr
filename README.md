@@ -13,3 +13,10 @@ send assets. `tally/market.mjs` is the logic with no DOM, built on the sidestr w
 every transaction is checked against the chain's own rules in the page before it is published.
 `node tally/test/market-test.mjs --mirror URL --key-file F [--send]` runs the whole flow. It is
 a playground: when the formats have settled, `market.mjs` moves into the wallet.
+
+## mock/
+
+https://play-grounds.github.io/sidestr/mock/ — a static mockup of a phone-first wallet, Phantom's
+shape: one balance, plain-words activity with did:nostr names, a send flow that says what will happen
+before the tap, receive, swap, a chain switcher from the directory, settings. Sample data only; nothing
+is live. It exists to be looked at and argued about before the real wallet is redesigned.
