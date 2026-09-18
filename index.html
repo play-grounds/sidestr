@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sidestr chains</title>
+<meta name="description" content="A directory of sidestr sidechains, read from the relays: every producer announces its tip, this page lists them, ranked by activity, with a link to the explorer and wallet for each.">
+<style>
+:root { --bg:#0b0f12; --fg:#d7dde2; --dim:#7d8790; --ac:#38d6c4; --line:#1c252c; --card:#10161b; --bad:#ff7a7a; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+* { box-sizing:border-box } body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif }
+header { display:flex; align-items:baseline; gap:.8rem; padding:1rem 1.2rem; border-bottom:1px solid var(--line) } header h1 { margin:0; font-size:1.1rem; font-weight:600 } header h1 span { color:var(--ac) } .grow { flex:1 } .pill { font:.75rem var(--mono); color:var(--dim) }
+main { max-width:1100px; margin:0 auto; padding:1.2rem }
+.lede { color:var(--dim); margin:0 0 1rem } table { width:100%; border-collapse:collapse; font-size:.92rem } th, td { text-align:left; padding:.55rem .5rem; border-bottom:1px solid var(--line); vertical-align:top } th { color:var(--dim); font-weight:500; font-size:.75rem; letter-spacing:.06em; text-transform:uppercase } td.r, th.r { text-align:right } .mono { font-family:var(--mono); font-size:.85rem } .dim { color:var(--dim) } .bad { color:var(--bad) } .ac { color:var(--ac) } a { color:var(--ac); text-decoration:none } a:hover { text-decoration:underline }
+.rank { color:var(--dim); font-family:var(--mono) } .name { font-weight:600 } .comment { color:var(--dim); font-size:.82rem; max-width:34rem } .links a { margin-right:.6rem; white-space:nowrap }
+.wrap { overflow-x:auto } footer { color:var(--dim); font-size:.82rem; padding:1.5rem 1.2rem; border-top:1px solid var(--line); margin-top:2rem } code { font-family:var(--mono); font-size:.85em; background:var(--card); padding:.1em .35em; border-radius:3px }
+.boot { color:var(--dim); padding:2rem 0 } .err { color:var(--bad) }
+@media (max-width:700px) { .hide-sm { display:none } }
+</style>
+</head>
+<body>
+<header><h1><span>sidestr</span> chains</h1><span class="pill" id="pill">reading the relays…</span><span class="grow"></span><button id="refresh">refresh</button></header>
+<main>
+<p class="lede">Every sidestr producer announces its tip on Nostr (kind 33333, tagged <code>t</code> = sidestr). This page asks the relays, ranks the chains by blocks in the last day, and checks each mirror against its signer. Nothing is curated; a chain is listed the moment it announces.</p>
+<div id="app"><div class="boot">reading the relays…</div></div>
+</main>
+<footer>
+<b>Get listed:</b> run <code>siding produce --relay wss://… --announce-mirror https://your-host/path</code> — the announcement names your mirror, and the mirror's <code>chain.json</code> must be signed by the announcing key. <code>?relay=wss://a,wss://b</code> reads other relays.
+<a href="https://github.com/sidestr/spec" target="_blank" rel="noopener">spec</a> · <a href="https://sidestr.com/explorer/" target="_blank" rel="noopener">explorer</a> · <a href="https://sidestr.com/wallet/" target="_blank" rel="noopener">wallet</a> · <a href="https://github.com/play-grounds/sidestr" target="_blank" rel="noopener">source</a>
+</footer>
+<script type="module">
+import { listChains, DEFAULT_RELAYS } from './sidechains.mjs';
+const q = new URLSearchParams(location.search);
+const relays = (q.get('relay') ?? DEFAULT_RELAYS.join(',')).split(',').map((x) => x.trim()).filter(Boolean);
+const EXPLORER = 'https://sidestr.com/explorer/', WALLET = 'https://sidestr.com/wallet/';
+const $ = (id) => document.getElementById(id), esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ago = (t) => { if (!t) return '—'; const s = Math.max(0, Math.floor(Date.now() / 1000) - t); return s < 60 ? `${s}s ago` : s < 3600 ? `${Math.floor(s / 60)}m ago` : s < 86400 ? `${Math.floor(s / 3600)}h ago` : `${Math.floor(s / 86400)}d ago`; };
+const short = (h) => h ? `${h.slice(0, 8)}…` : '—';
+async function load() {
+  $('refresh').disabled = true; $('pill').textContent = 'reading the relays…'; const notes = [];
+  try {
+    const rows = await listChains({ relays, onRelay: (u, s) => notes.push(`${u.replace('wss://', '')}: ${s}`) });
+    $('pill').textContent = `${rows.length} chain${rows.length === 1 ? '' : 's'} · ${notes.join(' · ')}`;
+    if (!rows.length) { $('app').innerHTML = `<div class="boot">no sidestr chain has announced itself on ${esc(relays.join(', '))} yet.</div>`; return; }
+    $('app').innerHTML = `<div class="wrap"><table><thead><tr><th>#</th><th>chain</th><th class="hide-sm">parent</th><th class="r">height</th><th class="r">last block</th><th class="r" title="blocks in the last day, counted from the twelve headers in the announcement, so at most 12">24 h</th><th class="hide-sm">signer</th><th>mirror</th><th></th></tr></thead><tbody>${rows.map((r, i) => `<tr>
+      <td class="rank">${i + 1}</td>
+      <td><div class="name">${esc(r.name)}</div><div class="mono dim">${esc(r.id)}</div>${r.comment ? `<div class="comment">${esc(r.comment)}</div>` : ''}</td>
+      <td class="mono hide-sm">${esc(r.parent ?? '—')}</td>
+      <td class="r mono">${r.tip.toLocaleString('en-US')}</td>
+      <td class="r" title="announced ${ago(r.announcedAt)}">${ago(r.lastBlock)}</td>
+      <td class="r mono">${r.blocks24h}</td>
+      <td class="mono hide-sm" title="${esc(r.signer)}">${short(r.signer)}${r.announcers > 1 ? ` <span class="bad" title="${r.announcers} keys announce this id; the newest wins">×${r.announcers}</span>` : ''}</td>
+      <td class="mono">${r.mirror ? `<a href="${esc(r.mirror)}/chain.json" target="_blank" rel="noopener" title="${esc(r.note)}">${esc(r.mirror.replace(/^https?:\/\//, ''))}</a> <span class="ac">✓</span>` : `<span class="bad" title="${esc(r.note)}">no mirror vouched for</span>`}</td>
+      <td class="links">${r.mirror ? `<a href="${EXPLORER}?chain=${encodeURIComponent(r.id)}" target="_blank" rel="noopener">explorer ↗</a><a href="${WALLET}?chain=${encodeURIComponent(r.id)}" target="_blank" rel="noopener">wallet ↗</a>` : ''}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+  } catch (e) { $('pill').textContent = 'failed'; $('app').innerHTML = `<div class="err">${esc(e.message)}</div>`; console.error(e); }
+  finally { $('refresh').disabled = false; }
+}
+$('refresh').onclick = load; load();
+</script>
+</body>
+</html>
