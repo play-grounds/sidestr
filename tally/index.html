@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>tally</title>
+<meta name="description" content="Swap, pool and issue assets on a sidestr chain. Keys in your browser, every transaction checked against the chain's own rules before it leaves.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f766e'/%3E%3Ccircle cx='12' cy='16' r='6' fill='none' stroke='%23fff' stroke-width='2.5'/%3E%3Ccircle cx='20' cy='16' r='6' fill='none' stroke='%23fff' stroke-width='2.5'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#0b0e11;--bg2:#12161b;--card:#161b22;--card2:#1d232c;--line:#242b35;--line2:#2f3844;--fg:#e9edf1;--fg2:#9aa4b1;--fg3:#66717e;--ac:#2dd4bf;--ac2:#14b8a6;--acbg:rgba(45,212,191,.12);--bad:#f87171;--badbg:rgba(248,113,113,.12);--warn:#fbbf24;--good:#4ade80;--r:20px;--r2:14px;--sans:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+*{box-sizing:border-box}html{color-scheme:dark}body{margin:0;background:radial-gradient(1200px 600px at 50% -10%,rgba(45,212,191,.10),transparent 60%),var(--bg);color:var(--fg);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}input{font:inherit;color:inherit;background:none;border:0;outline:none}input::placeholder{color:var(--fg3)}
+.top{display:flex;align-items:center;gap:14px;padding:16px 22px;position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 70%,transparent)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;letter-spacing:-.2px}.brand svg{width:26px;height:26px}.brand span{color:var(--ac)}
+.nav{display:flex;gap:4px;margin-left:12px;background:var(--bg2);padding:4px;border-radius:14px;border:1px solid var(--line)}.nav button{padding:7px 14px;border-radius:10px;font-weight:600;color:var(--fg2)}.nav button.on{background:var(--card2);color:var(--fg)}
+.grow{flex:1}.pill{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:12px;background:var(--bg2);border:1px solid var(--line);font-size:13px;color:var(--fg2);font-family:var(--mono)}.pill b{color:var(--fg);font-weight:600}.dot{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 0 3px rgba(74,222,128,.15)}.dot.off{background:var(--fg3);box-shadow:none}.dot.warn{background:var(--warn)}
+.acct{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:12px;background:var(--card2);border:1px solid var(--line2);font-family:var(--mono);font-size:13px;font-weight:600}.acct:hover{border-color:var(--ac)}
+main{max-width:480px;margin:28px auto 80px;padding:0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.card h2{margin:2px 6px 12px;font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px}.card h2 small{color:var(--fg3);font-weight:500;font-size:13px}
+.box{background:var(--bg2);border:1px solid transparent;border-radius:var(--r2);padding:14px 16px;transition:border-color .15s}.box:focus-within{border-color:var(--line2)}.box+.box{margin-top:4px}
+.box .lbl{font-size:13px;color:var(--fg2);display:flex;justify-content:space-between}.box .row{display:flex;align-items:center;gap:10px;margin-top:6px}
+.amt{flex:1;min-width:0;font-size:32px;font-weight:600;letter-spacing:-.5px;font-family:var(--sans);width:100%}.amt.small{font-size:20px}
+.tok{display:inline-flex;align-items:center;gap:8px;padding:7px 10px 7px 8px;border-radius:999px;background:var(--card2);border:1px solid var(--line2);font-weight:600;font-size:15px;white-space:nowrap}.tok:hover{background:var(--line2)}.tok .ic{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--ac),#0e7490);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#03211d}.tok .ic.s{background:linear-gradient(135deg,#f59e0b,#b45309);color:#2a1600}.tok .ic.lp{background:linear-gradient(135deg,#a78bfa,#6d28d9);color:#1a0b3a}.tok svg{width:14px;height:14px;opacity:.7}
+.sub{display:flex;justify-content:space-between;font-size:13px;color:var(--fg3);margin-top:6px;min-height:18px}.sub .max{color:var(--ac);font-weight:600;cursor:pointer}
+.flip{display:flex;justify-content:center;margin:-10px 0;position:relative;z-index:1}.flip button{width:38px;height:38px;border-radius:12px;background:var(--card);border:4px solid var(--card);display:flex;align-items:center;justify-content:center;color:var(--fg2)}.flip button:hover{color:var(--fg);background:var(--card2)}.flip svg{width:18px;height:18px}
+.quote{margin:10px 6px 4px;font-size:13px;color:var(--fg2)}.quote details{border-top:1px solid var(--line);margin-top:8px;padding-top:8px}.quote summary{cursor:pointer;display:flex;justify-content:space-between;list-style:none;color:var(--fg)}.quote summary::-webkit-details-marker{display:none}.quote .kv{display:flex;justify-content:space-between;padding:3px 0}.quote .kv b{color:var(--fg);font-weight:500;font-family:var(--mono);font-size:12.5px}.impact.hi{color:var(--warn)}.impact.vhi{color:var(--bad)}
+.cta{width:100%;margin-top:10px;padding:16px;border-radius:var(--r2);font-size:17px;font-weight:600;background:var(--ac);color:#03211d;transition:transform .05s,filter .15s}.cta:hover{filter:brightness(1.06)}.cta:active{transform:scale(.99)}.cta:disabled{background:var(--card2);color:var(--fg3);cursor:default;filter:none}.cta.warn{background:var(--warn);color:#2a1600}
+.msg{margin:10px 6px 0;font-size:13.5px;line-height:1.45}.msg.err{color:var(--bad)}.msg.ok{color:var(--good)}.msg .mono{font-family:var(--mono);font-size:12.5px}
+.list{display:flex;flex-direction:column;gap:6px}.item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r2);background:var(--bg2);border:1px solid transparent}.item:hover{border-color:var(--line2)}.item .t{flex:1;min-width:0}.item .t b{display:block;font-weight:600}.item .t span{font-size:12.5px;color:var(--fg3);font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}.item .v{text-align:right;font-family:var(--mono);font-size:13px}.item .v b{display:block;font-weight:600;font-size:14px;color:var(--fg)}.item .v span{color:var(--fg3);font-size:12px}
+.empty{padding:26px 14px;text-align:center;color:var(--fg3);font-size:14px}
+.field{margin-top:8px}.field label{display:block;font-size:12.5px;color:var(--fg2);margin:0 0 4px 6px}.field input,.field select{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;color:var(--fg)}.field input:focus{border-color:var(--line2)}.field .mono{font-family:var(--mono);font-size:13.5px}.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg{display:flex;gap:4px;background:var(--bg2);padding:4px;border-radius:12px;margin-bottom:10px}.seg button{flex:1;padding:8px;border-radius:9px;font-weight:600;color:var(--fg2);font-size:14px}.seg button.on{background:var(--card2);color:var(--fg)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px;backdrop-filter:blur(4px)}.modal .card{width:100%;max-width:420px;max-height:80vh;overflow:auto}.modal h2 button{margin-left:auto;color:var(--fg2);font-size:20px;line-height:1}
+.foot{max-width:480px;margin:0 auto;padding:0 22px;font-size:12.5px;color:var(--fg3);text-align:center}.foot code{font-family:var(--mono)}
+.boot{padding:40px 10px;text-align:center;color:var(--fg2)}.ring{width:26px;height:26px;border:3px solid var(--line2);border-top-color:var(--ac);border-radius:50%;margin:0 auto 12px;animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+.tag{font-size:11px;padding:2px 7px;border-radius:6px;background:var(--acbg);color:var(--ac);font-weight:600;font-family:var(--mono)}.tag.unb{background:rgba(251,191,36,.12);color:var(--warn)}
+@media (max-width:560px){.top{padding:12px 14px;flex-wrap:wrap}.nav{order:3;width:100%;margin:6px 0 0}.pill{display:none}.amt{font-size:26px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><svg viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#0f766e"/><circle cx="12" cy="16" r="6" fill="none" stroke="#fff" stroke-width="2.5"/><circle cx="20" cy="16" r="6" fill="none" stroke="#fff" stroke-width="2.5"/></svg><span>tally</span></div>
+  <nav class="nav" id="nav"><button data-tab="swap" class="on">Swap</button><button data-tab="pool">Pool</button><button data-tab="assets">Assets</button></nav>
+  <span class="grow"></span>
+  <span class="pill" id="chainpill"><span class="dot off"></span> …</span>
+  <button class="acct" id="acct">…</button>
+</header>
+<main id="app"><div class="card"><div class="boot"><div class="ring"></div>opening the chain…</div></div></main>
+<footer class="foot"><p>Keys stay in this browser. Every transaction is checked against the chain's own rules here before it is published to a relay; the signer orders them. Assets here are <b>unbacked</b>: numbers the chain keeps. <a href="https://sidestr.com/spec/#12-assets-and-pools" target="_blank" rel="noopener">spec §12</a> · <a href="https://github.com/play-grounds/sidestr" target="_blank" rel="noopener">source</a> · <span id="links"></span></p></footer>
+<script type="module">
+import { openMarket, DEFAULTS, CARRIER_SATS } from './market.mjs';
+const q = new URLSearchParams(location.search);
+const chainId = (q.get('chain') ?? 'sidestr:tally').trim(); const mirror = (q.get('mirror') ?? '').replace(/\/+$/, '') || undefined;
+const overrides = Object.fromEntries(['lib', 'cdn', 'explorer', 'wallet'].filter((k) => q.get(k)).map((k) => [k, q.get(k)]));
+const relays = (q.get('relay') ?? DEFAULTS.relays.join(',')).split(',').map((x) => x.trim()).filter(Boolean);
+const EXPLORER = 'https://sidestr.com/explorer/', WALLET = 'https://sidestr.com/wallet/';
+const $ = (id) => document.getElementById(id), esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const LS = { get: (k) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} }, del: (k) => { try { localStorage.removeItem(k); } catch {} } };
+const sats = (n) => Number(n).toLocaleString('en-US'); const btc = (n) => (Number(n) / 1e8).toLocaleString('en-US', { maximumFractionDigits: 8 });
+const app = $('app'); let m = null, key = null, me = null, tab = 'swap', busy = false, modal = null;
+let S = { pool: null, sell: 'sats', amount: '', poolMode: 'add', poolId: null, addSats: '', removeShares: '', issue: { ticker: '', decimals: '2', supply: '' }, xfer: { asset: null, to: '', amount: '' } };
+const SATS = { id: 'sats', ticker: 'sats', decimals: 0 };
+const ic = (a) => `<span class="ic ${a.id === 'sats' ? 's' : a.share ? 'lp' : ''}">${esc(a.id === 'sats' ? '₿' : a.ticker.slice(0, 2))}</span>`;
+const tokBtn = (a, onclick) => `<button class="tok" data-pick="${onclick}">${ic(a)}${esc(a.ticker)}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>`;
+const fmtA = (id, n) => id === 'sats' ? sats(n) : m.fmt(id, n);
+const bal = (id) => { if (!me) return 0; if (id === 'sats') return m.w.balance(me.script).spendable; return m.balances(me.script).get(id) ?? 0; };
+const explore = (kind, id) => `${EXPLORER}?chain=${encodeURIComponent(chainId)}#/${kind}/${id}`;
+
+async function boot() {
+  try {
+    m = await openMarket({ chain: chainId, mirror, relays, ...overrides, onProgress: (s) => { const b = app.querySelector('.boot'); if (b) b.lastChild.textContent = s + '…'; } });
+    key = LS.get(`sidestr_key:${m.chain.id}`); me = key ? m.w.identity(key) : null;
+    $('links').innerHTML = `<a href="${EXPLORER}?chain=${encodeURIComponent(chainId)}" target="_blank" rel="noopener">explorer</a> · <a href="${WALLET}?chain=${encodeURIComponent(chainId)}" target="_blank" rel="noopener">wallet</a>`;
+    const pools = m.pools(); S.pool = pools[0]?.id ?? null; S.poolId = S.pool;
+    render(); m.w.followTips(async (t) => { for (let i = 0; i < 6 && (m.tip?.height ?? -1) < t.tip; i++) { await new Promise((r) => setTimeout(r, 2500)); await m.refresh(); } if (!busy) render(); });
+  } catch (e) { app.innerHTML = `<div class="card"><div class="msg err"><b>could not open ${esc(chainId)}</b><br>${esc(e.message)}</div></div>`; console.error(e); }
+}
+function header() {
+  $('chainpill').innerHTML = `<span class="dot"></span> ${esc(m.chain.name)} <b>#${m.tip?.height ?? 0}</b>`;
+  $('acct').innerHTML = me ? `<span class="ic" style="width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#${me.pub.slice(0, 6)},#${me.pub.slice(6, 12)});display:inline-block"></span>${esc(me.address.slice(0, 7))}…${esc(me.address.slice(-4))}` : 'Connect key';
+}
+function render() {
+  header(); document.querySelectorAll('#nav button').forEach((b) => b.classList.toggle('on', b.dataset.tab === tab));
+  app.innerHTML = tab === 'swap' ? swapView() : tab === 'pool' ? poolView() : assetsView();
+  wire();
+}
+/* ---------- swap ---------- */
+function swapView() {
+  const pools = m.pools(); if (!pools.length) return `<div class="card"><h2>Swap</h2><div class="empty">No pool on ${esc(m.chain.name)} yet.<br><a href="#" data-go="pool">Open the first one</a> under Pool.</div></div>`;
+  const p = m.pool(S.pool) ?? pools[0]; S.pool = p.id; const A = { id: p.asset, ticker: p.ticker, decimals: p.decimals };
+  const from = S.sell === 'sats' ? SATS : A, to = S.sell === 'sats' ? A : SATS;
+  let quote = null, err = null, amt = 0; try { amt = from.id === 'sats' ? Math.round(Number(S.amount) || 0) : m.parseAmount(A.id, S.amount || '0'); if (amt > 0) quote = m.quoteSwap({ pool: p.id, sell: S.sell, amount: amt }); } catch (e) { err = e.message; }
+  const have = bal(from.id), short = amt > have;
+  const cta = !me ? 'Connect key' : !amt ? 'Enter an amount' : err ? err : short ? `Not enough ${from.ticker}` : quote?.impact > 0.15 ? 'Swap anyway' : 'Swap';
+  const impactCls = quote ? (quote.impact > 0.15 ? 'vhi' : quote.impact > 0.03 ? 'hi' : '') : '';
+  return `<div class="card"><h2>Swap <small>${esc(p.ticker)} / sats · pool ${esc(p.id.slice(0, 8))}</small></h2>
+  <div class="box"><div class="lbl"><span>Sell</span><span>${me ? `balance ${fmtA(from.id, have)}` : ''}</span></div>
+    <div class="row"><input class="amt" id="amt" inputmode="decimal" placeholder="0" value="${esc(S.amount)}" autocomplete="off">${tokBtn(from, 'from')}</div>
+    <div class="sub"><span>${from.id === 'sats' && amt ? btc(amt) + ' tBTC' : ''}</span>${me && have ? `<span class="max" id="max">Max</span>` : ''}</div></div>
+  <div class="flip"><button id="flip" title="switch direction"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 4v16m0 0-5-5m5 5 5-5"/></svg></button></div>
+  <div class="box"><div class="lbl"><span>Buy</span><span>${me ? `balance ${fmtA(to.id, bal(to.id))}` : ''}</span></div>
+    <div class="row"><input class="amt" readonly placeholder="0" value="${quote ? fmtA(to.id, quote.out) : ''}">${tokBtn(to, 'to')}</div>
+    <div class="sub"><span>${quote && to.id === 'sats' ? btc(quote.out) + ' tBTC' : ''}</span></div></div>
+  ${quote ? `<div class="quote"><details><summary><span>1 ${esc(A.ticker)} = ${sats(Math.round(p.price * 10 ** A.decimals))} sats</span><span class="impact ${impactCls}">${quote.impact < 0.0001 ? '<0.01' : (quote.impact * 100).toFixed(2)}% impact</span></summary>
+    <div class="kv"><span>You receive (exact)</span><b>${fmtA(to.id, quote.out)} ${esc(to.ticker)}</b></div>
+    <div class="kv"><span>Effective price</span><b>${S.sell === 'sats' ? sats(Math.round(quote.price * 10 ** A.decimals)) + ' sats / ' + esc(A.ticker) : sats(Math.round(quote.price * 10 ** A.decimals)) + ' sats / ' + esc(A.ticker)}</b></div>
+    <div class="kv"><span>Pool fee (0.3%)</span><b>${fmtA(from.id, quote.fee)} ${esc(from.ticker)}</b></div>
+    <div class="kv"><span>Network fee</span><b>~${m.w.minFeeRate * 260} sats</b></div>
+    <div class="kv"><span>Pool after</span><b>${sats(quote.x2)} sats · ${m.fmt(A.id, quote.y2)} ${esc(A.ticker)}</b></div>
+    <div class="kv"><span>Slippage</span><b>none — amounts are exact; if the pool moves first, this is refused at no cost</b></div></details></div>` : ''}
+  <button class="cta ${quote?.impact > 0.15 ? 'warn' : ''}" id="go" ${(!me || !quote || short) ? 'disabled' : ''}>${esc(cta)}</button><div id="out"></div></div>`;
+}
+/* ---------- pool ---------- */
+function poolView() {
+  const pools = m.pools(), assets = m.assets().filter((a) => !a.share);
+  const mine = me ? pools.filter((p) => (m.balances(me.script).get(p.id) ?? 0) > 0) : [];
+  const list = pools.length ? `<div class="list">${pools.map((p) => { const sh = me ? (m.balances(me.script).get(p.id) ?? 0) : 0; return `<div class="item" data-pool="${p.id}" style="cursor:pointer;${p.id === S.poolId ? 'border-color:var(--ac)' : ''}"><span class="tok" style="padding:6px 8px">${ic({ id: p.asset, ticker: p.ticker })}${ic(SATS)}</span><div class="t"><b>${esc(p.ticker)} / sats</b><span>${sats(p.x)} sats · ${m.fmt(p.asset, p.y)} ${esc(p.ticker)} · 1 ${esc(p.ticker)} = ${sats(Math.round(p.price * 10 ** p.decimals))} sats</span></div><div class="v"><b>${sh ? ((sh / p.shares) * 100).toFixed(2) + '%' : '—'}</b><span>${sh ? sats(sh) + ' shares' : 'no position'}</span></div></div>`; }).join('')}</div>` : `<div class="empty">No pool yet. Open one below: it needs an asset and sats.</div>`;
+  const p = m.pool(S.poolId); let body = '';
+  if (S.poolMode === 'open' || !p) {
+    body = `<div class="field"><label>Asset</label><select id="oasset">${assets.length ? assets.map((a) => `<option value="${a.id}" ${a.id === S.xfer.asset ? 'selected' : ''}>${esc(a.ticker)} — you hold ${m.fmt(a.id, bal(a.id))}</option>`).join('') : '<option value="">issue an asset first (Assets tab)</option>'}</select></div>
+      <div class="two"><div class="field"><label>Sats in</label><input id="osats" inputmode="numeric" class="mono" placeholder="10000000" value="${esc(S.addSats)}"></div><div class="field"><label>Units in</label><input id="ounits" inputmode="decimal" class="mono" placeholder="500000.00" value="${esc(S.removeShares)}"></div></div>
+      <div class="quote" id="oq"></div><button class="cta" id="open" ${me && assets.length ? '' : 'disabled'}>${me ? 'Open pool' : 'Connect key'}</button>`;
+  } else if (S.poolMode === 'add') {
+    let qa = null; try { const s = Math.round(Number(S.addSats) || 0); if (s > 0) qa = m.quoteAdd({ pool: p.id, sats: s }); } catch {}
+    body = `<div class="box"><div class="lbl"><span>Add sats</span><span>${me ? 'balance ' + sats(bal('sats')) : ''}</span></div><div class="row"><input class="amt small" id="asats" inputmode="numeric" placeholder="0" value="${esc(S.addSats)}">${tokBtn(SATS, 'none')}</div></div>
+      <div class="box"><div class="lbl"><span>and ${esc(p.ticker)} (at the pool's ratio)</span><span>${me ? 'balance ' + m.fmt(p.asset, bal(p.asset)) : ''}</span></div><div class="row"><input class="amt small" readonly value="${qa ? m.fmt(p.asset, qa.asset) : ''}" placeholder="0">${tokBtn({ id: p.asset, ticker: p.ticker }, 'none')}</div></div>
+      ${qa ? `<div class="quote"><div class="kv"><span>Shares minted</span><b>${sats(qa.shares)}</b></div><div class="kv"><span>Your share of the pool after</span><b>${(qa.share * 100).toFixed(3)}%</b></div></div>` : ''}
+      <button class="cta" id="add" ${me && qa && qa.asset <= bal(p.asset) && qa.sats <= bal('sats') ? '' : 'disabled'}>${!me ? 'Connect key' : !qa ? 'Enter an amount' : qa.asset > bal(p.asset) ? 'Not enough ' + esc(p.ticker) : qa.sats > bal('sats') ? 'Not enough sats' : 'Add liquidity'}</button>`;
+  } else {
+    const held = bal(p.id); let qr = null; try { const s = Math.round(Number(S.removeShares) || 0); if (s > 0 && s <= held) qr = m.quoteRemove({ pool: p.id, shares: s }); } catch {}
+    body = `<div class="box"><div class="lbl"><span>Remove shares</span><span>you hold ${sats(held)}</span></div><div class="row"><input class="amt small" id="rshares" inputmode="numeric" placeholder="0" value="${esc(S.removeShares)}">${tokBtn({ id: p.id, ticker: 'LP·' + p.ticker, share: true }, 'none')}</div><div class="sub"><span></span>${held ? `<span class="max" id="rmax">Max</span>` : ''}</div></div>
+      ${qr ? `<div class="quote"><div class="kv"><span>You receive</span><b>${sats(qr.sats)} sats + ${m.fmt(p.asset, qr.asset)} ${esc(p.ticker)}</b></div></div>` : ''}
+      <button class="cta" id="remove" ${me && qr ? '' : 'disabled'}>${!me ? 'Connect key' : held ? (qr ? 'Remove liquidity' : 'Enter shares') : 'No position'}</button>`;
+  }
+  return `<div class="card"><h2>Pools <small>${pools.length} on ${esc(m.chain.name)}</small></h2>${list}</div>
+  <div class="card" style="margin-top:12px"><h2>${p && S.poolMode !== 'open' ? esc(p.ticker) + ' / sats' : 'Open a pool'}</h2>
+    <div class="seg"><button data-mode="add" class="${S.poolMode === 'add' ? 'on' : ''}" ${p ? '' : 'disabled'}>Add</button><button data-mode="remove" class="${S.poolMode === 'remove' ? 'on' : ''}" ${p ? '' : 'disabled'}>Remove</button><button data-mode="open" class="${S.poolMode === 'open' || !p ? 'on' : ''}">Open new</button></div>${body}<div id="out"></div></div>`;
+}
+/* ---------- assets ---------- */
+function assetsView() {
+  const assets = m.assets(); const held = me ? m.balances(me.script) : new Map();
+  const rows = assets.map((a) => `<div class="item"><span class="tok" style="padding:6px 8px">${ic(a)}</span><div class="t"><b>${esc(a.ticker)} ${a.share ? '<span class="tag">LP shares</span>' : '<span class="tag unb">unbacked</span>'}</b><span><a href="${explore('tx', a.id)}" target="_blank" rel="noopener">${esc(a.id.slice(0, 16))}…</a> · ${a.decimals} decimals</span></div><div class="v"><b>${held.get(a.id) ? m.fmt(a.id, held.get(a.id)) : '—'}</b><span>${held.get(a.id) ? 'you hold' : ''}</span></div></div>`).join('');
+  return `<div class="card"><h2>Assets <small>${assets.length} on ${esc(m.chain.name)}</small></h2>${assets.length ? `<div class="list">${rows}</div>` : '<div class="empty">Nothing issued yet.</div>'}</div>
+  <div class="card" style="margin-top:12px"><h2>Issue <small>a new asset, unbacked</small></h2>
+    <div class="two"><div class="field"><label>Ticker</label><input id="iticker" class="mono" placeholder="SHELL" maxlength="8" value="${esc(S.issue.ticker)}" style="text-transform:uppercase"></div><div class="field"><label>Decimals</label><input id="idec" class="mono" inputmode="numeric" value="${esc(S.issue.decimals)}"></div></div>
+    <div class="field"><label>Supply (whole units, before decimals)</label><input id="isupply" class="mono" inputmode="numeric" placeholder="1000000" value="${esc(S.issue.supply)}"></div>
+    <button class="cta" id="issue" ${me ? '' : 'disabled'}>${me ? 'Issue' : 'Connect key'}</button><div id="out"></div></div>
+  <div class="card" style="margin-top:12px"><h2>Send <small>an asset to an address</small></h2>
+    <div class="field"><label>Asset</label><select id="xasset">${assets.filter((a) => held.get(a.id)).map((a) => `<option value="${a.id}" ${a.id === S.xfer.asset ? 'selected' : ''}>${esc(a.ticker)} — ${m.fmt(a.id, held.get(a.id))}</option>`).join('') || '<option value="">nothing to send</option>'}</select></div>
+    <div class="two"><div class="field"><label>To (${esc(m.chain.addressPrefix)}1… or did:nostr hex)</label><input id="xto" class="mono" placeholder="${esc(m.chain.addressPrefix)}1p…" value="${esc(S.xfer.to)}"></div><div class="field"><label>Amount</label><input id="xamt" class="mono" inputmode="decimal" value="${esc(S.xfer.amount)}"></div></div>
+    <button class="cta" id="xfer" ${me && held.size ? '' : 'disabled'}>Send</button><div id="out2"></div></div>`;
+}
+/* ---------- wiring ---------- */
+function on(id, ev, fn) { const el = $(id); if (el) el.addEventListener(ev, fn); }
+function wire() {
+  document.querySelectorAll('[data-go]').forEach((a) => a.onclick = (e) => { e.preventDefault(); tab = a.dataset.go; render(); });
+  document.querySelectorAll('[data-pick]').forEach((b) => b.onclick = () => { if (b.dataset.pick === 'none') return; pickToken(b.dataset.pick); });
+  on('amt', 'input', (e) => { S.amount = e.target.value; softRender(); });
+  on('max', 'click', () => { const from = S.sell === 'sats' ? 'sats' : m.pool(S.pool).asset; S.amount = from === 'sats' ? String(Math.max(0, bal('sats') - 5000)) : m.fmt(from, bal(from)).replace(/,/g, ''); render(); });
+  on('flip', 'click', () => { S.sell = S.sell === 'sats' ? 'asset' : 'sats'; S.amount = ''; render(); });
+  on('go', 'click', () => act(() => m.buildSwap({ key, pool: S.pool, sell: S.sell, amount: S.sell === 'sats' ? Math.round(Number(S.amount)) : m.parseAmount(m.pool(S.pool).asset, S.amount) }), 'swap'));
+  document.querySelectorAll('[data-pool]').forEach((el) => el.onclick = () => { S.poolId = el.dataset.pool; S.pool = el.dataset.pool; if (S.poolMode === 'open') S.poolMode = 'add'; render(); });
+  document.querySelectorAll('[data-mode]').forEach((b) => b.onclick = () => { S.poolMode = b.dataset.mode; render(); });
+  on('asats', 'input', (e) => { S.addSats = e.target.value; softRender(); }); on('rshares', 'input', (e) => { S.removeShares = e.target.value; softRender(); });
+  on('rmax', 'click', () => { S.removeShares = String(bal(S.poolId)); render(); });
+  on('osats', 'input', (e) => { S.addSats = e.target.value; openQuote(); }); on('ounits', 'input', (e) => { S.removeShares = e.target.value; openQuote(); }); on('oasset', 'change', (e) => { S.xfer.asset = e.target.value; openQuote(); }); openQuote();
+  on('add', 'click', () => act(() => m.buildAdd({ key, pool: S.poolId, sats: Math.round(Number(S.addSats)) }), 'add'));
+  on('remove', 'click', () => act(() => m.buildRemove({ key, pool: S.poolId, shares: Math.round(Number(S.removeShares)) }), 'remove'));
+  on('open', 'click', () => act(() => { const asset = $('oasset').value; return m.buildOpen({ key, asset, sats: Math.round(Number($('osats').value)), units: m.parseAmount(asset, $('ounits').value) }); }, 'open'));
+  on('iticker', 'input', (e) => S.issue.ticker = e.target.value); on('idec', 'input', (e) => S.issue.decimals = e.target.value); on('isupply', 'input', (e) => S.issue.supply = e.target.value);
+  on('issue', 'click', () => act(() => { const d = Number(S.issue.decimals || 0); return m.buildIssue({ key, ticker: S.issue.ticker, decimals: d, supply: Math.round(Number(S.issue.supply)) * 10 ** d }); }, 'issue'));
+  on('xasset', 'change', (e) => S.xfer.asset = e.target.value); on('xto', 'input', (e) => S.xfer.to = e.target.value); on('xamt', 'input', (e) => S.xfer.amount = e.target.value);
+  on('xfer', 'click', () => act(() => { const asset = $('xasset').value; return m.buildTransfer({ key, asset, to: /^[0-9a-f]{64}$/i.test(S.xfer.to.trim()) ? '5120' + S.xfer.to.trim().toLowerCase() : S.xfer.to.trim(), amount: m.parseAmount(asset, S.xfer.amount) }); }, 'send', 'out2'));
+  $('acct').onclick = keyModal;
+}
+function softRender() { const a = document.activeElement, id = a?.id, pos = a?.selectionStart; render(); if (id && $(id)) { $(id).focus(); try { $(id).setSelectionRange(pos, pos); } catch {} } }
+function openQuote() { const el = $('oq'); if (!el) return; try { const s = Math.round(Number($('osats').value) || 0), a = $('oasset').value; const u = a ? m.parseAmount(a, $('ounits').value || '0') : 0; if (s > 0 && u > 0) { const sh = Number(BigInt(Math.floor(Math.sqrt(s * u)))); el.innerHTML = `<div class="kv"><span>Opening price</span><b>1 ${esc(m.asset(a).ticker)} = ${sats(Math.round(s / u * 10 ** m.asset(a).decimals))} sats</b></div><div class="kv"><span>Shares minted to you</span><b>≈ ${sats(sh)} (√(sats × units))</b></div>`; } else el.innerHTML = ''; } catch (e) { el.innerHTML = `<div class="kv"><span class="impact vhi">${esc(e.message)}</span></div>`; } }
+async function act(build, what, outId = 'out') {
+  const out = $(outId); if (!out) return; busy = true; out.innerHTML = `<div class="msg">building and checking against the chain's rules…</div>`;
+  let b; try { b = build(); } catch (e) { busy = false; return out.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+  const btn = out.previousElementSibling; if (btn?.classList.contains('cta')) btn.disabled = true;
+  out.innerHTML = `<div class="msg ok">✓ passes the rules in this browser · <span class="mono">${esc(b.txid.slice(0, 16))}…</span> · fee ${b.fee} sats · publishing…</div>`;
+  try {
+    const r = await m.publish(b.hex, relays); if (!r.accepted) throw new Error('no relay accepted the event');
+    for (let i = 0; i < 36; i++) { await new Promise((res) => setTimeout(res, 5000)); const x = await m.mined(b.txid); if (x) { busy = false; if (what === 'swap') S.amount = ''; render(); const o = $(outId); if (o) o.innerHTML = `<div class="msg ok">✓ ${esc(what)} mined in block ${x.height} · <a href="${explore('tx', b.txid)}" target="_blank" rel="noopener">explorer ↗</a></div>`; return; } out.innerHTML = `<div class="msg ok">✓ published · waiting for the block… ${(i + 1) * 5}s</div>`; }
+    out.innerHTML = `<div class="msg err">published but not seen mined in 3 minutes; the producer may be slow, or the pool moved first (then this costs nothing). Refresh later.</div>`;
+  } catch (e) { out.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+  busy = false; if (btn) btn.disabled = false;
+}
+function pickToken(side) {
+  const pools = m.pools(); const items = pools.map((p) => `<div class="item" data-choose="${p.id}"><span class="tok" style="padding:6px 8px">${ic({ id: p.asset, ticker: p.ticker })}</span><div class="t"><b>${esc(p.ticker)}</b><span>pool ${esc(p.id.slice(0, 12))}… · 1 = ${sats(Math.round(p.price * 10 ** p.decimals))} sats</span></div><div class="v"><b>${me ? m.fmt(p.asset, bal(p.asset)) : ''}</b></div></div>`).join('');
+  showModal(`<h2>Select a token <button id="mclose">×</button></h2><div class="list"><div class="item" data-choose="sats"><span class="tok" style="padding:6px 8px">${ic(SATS)}</span><div class="t"><b>sats</b><span>the pegged coin</span></div><div class="v"><b>${me ? sats(bal('sats')) : ''}</b></div></div>${items}</div>`);
+  document.querySelectorAll('[data-choose]').forEach((el) => el.onclick = () => { const c = el.dataset.choose; if (c === 'sats') S.sell = side === 'from' ? 'sats' : 'asset'; else { S.pool = c; S.sell = side === 'from' ? 'asset' : 'sats'; } closeModal(); render(); });
+}
+function keyModal() {
+  showModal(`<h2>${me ? 'Your key' : 'Connect a key'} <button id="mclose">×</button></h2>${me ? `<div class="field"><label>Address on ${esc(m.chain.name)}</label><div class="mono" style="word-break:break-all;font-size:13px;padding:0 6px">${esc(me.address)}</div></div><div class="field"><label>as did:nostr / hex pubkey</label><div class="mono" style="word-break:break-all;font-size:12px;padding:0 6px;color:var(--fg2)">${esc(me.pub)}</div></div><div class="field"><label>balance</label><div style="padding:0 6px">${sats(bal('sats'))} sats spendable${m.w.balance(me.script).immature ? ` · ${sats(m.w.balance(me.script).immature)} immature` : ''}</div></div>
+    <details style="margin:12px 6px"><summary style="cursor:pointer;color:var(--fg2)">private key backup</summary><div class="mono" style="word-break:break-all;font-size:12px;margin-top:6px">${esc(key)}</div></details>
+    <button class="cta" id="forget" style="background:var(--badbg);color:var(--bad)">Forget this key in this browser</button>` :
+  `<p class="msg">A key is 32 bytes of hex — the same kind as a Nostr key; a <b>did:nostr</b> player's secret key works as is. It stays in this browser, unencrypted: small amounts.</p>
+    <div class="field"><label>Paste a private key (hex)</label><input id="kin" class="mono" placeholder="64 hex characters" autocomplete="off"></div><button class="cta" id="kimport">Use this key</button>
+    <div style="text-align:center;color:var(--fg3);margin:10px 0 4px">or</div><button class="cta" id="knew" style="background:var(--card2);color:var(--fg)">Make a new key</button>`}`);
+  on('kimport', 'click', () => { const v = $('kin').value.trim().toLowerCase(); try { m.w.identity(v); key = v; LS.set(`sidestr_key:${m.chain.id}`, key); me = m.w.identity(key); closeModal(); render(); } catch (e) { $('kin').value = ''; $('kin').placeholder = e.message; } });
+  on('knew', 'click', () => { key = m.w.newKey(); LS.set(`sidestr_key:${m.chain.id}`, key); me = m.w.identity(key); closeModal(); render(); keyModal(); });
+  on('forget', 'click', () => { if (!confirm('Forget the key in this browser? Without a backup the coins are gone.')) return; LS.del(`sidestr_key:${m.chain.id}`); key = null; me = null; closeModal(); render(); });
+}
+function showModal(html) { closeModal(); modal = document.createElement('div'); modal.className = 'modal'; modal.innerHTML = `<div class="card">${html}</div>`; document.body.appendChild(modal); modal.onclick = (e) => { if (e.target === modal) closeModal(); }; on('mclose', 'click', closeModal); }
+function closeModal() { if (modal) { modal.remove(); modal = null; } }
+document.querySelectorAll('#nav button').forEach((b) => b.onclick = () => { tab = b.dataset.tab; render(); });
+boot();
+</script>
+</body>
+</html>
