@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" font-family="DejaVu Sans, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b0e11"/><stop offset="1" stop-color="#101a1b"/></linearGradient>
+    <linearGradient id="top" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#0f766e"/></linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0" r="0.8"><stop offset="0" stop-color="#2dd4bf" stop-opacity="0.18"/><stop offset="1" stop-color="#2dd4bf" stop-opacity="0"/></radialGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="18" stdDeviation="26" flood-color="#000" flood-opacity="0.5"/></filter>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <rect width="1200" height="8" fill="url(#top)"/>
+  <g transform="translate(80,64)"><rect width="30" height="30" rx="8" fill="#0f766e"/><circle cx="11" cy="15" r="6" fill="none" stroke="#fff" stroke-width="2.4"/><circle cx="19" cy="15" r="6" fill="none" stroke="#fff" stroke-width="2.4"/></g>
+  <text x="122" y="88" font-size="29" font-weight="700" fill="#e9edf1" letter-spacing="-0.3">tally</text>
+  <text x="1120" y="88" text-anchor="end" font-size="14" font-weight="700" fill="#2dd4bf" letter-spacing="2">SWAP · POOL · ISSUE</text>
+  <text x="78" y="238" font-size="50" font-weight="800" fill="#e9edf1" letter-spacing="-1.6">Swap on a sidechain</text>
+  <text x="78" y="302" font-size="44" font-style="italic" font-weight="600" fill="#9aa4b1" letter-spacing="-0.6">the <tspan fill="#2dd4bf" font-weight="700">rules</tspan> check the trade.</text>
+  <text x="80" y="372" font-size="22" fill="#9aa4b1">Constant-product pools as a consensus rule, not a contract.</text>
+  <text x="80" y="402" font-size="22" fill="#9aa4b1">Exact quotes, no slippage setting, checked in your browser first.</text>
+  <g>
+    <text x="80" y="530" font-family="DejaVu Sans Mono, monospace" font-size="54" font-weight="700" fill="#2dd4bf">0.3%</text>
+    <text x="80" y="562" font-size="15" font-weight="700" fill="#66717e" letter-spacing="2">FEE TO THE POOL</text>
+    <text x="330" y="530" font-family="DejaVu Sans Mono, monospace" font-size="54" font-weight="700" fill="#e9edf1">0</text>
+    <text x="330" y="562" font-size="15" font-weight="700" fill="#66717e" letter-spacing="2">CONTRACTS</text>
+    <text x="560" y="530" font-family="DejaVu Sans Mono, monospace" font-size="54" font-weight="700" fill="#e9edf1">x·y</text>
+    <text x="560" y="562" font-size="15" font-weight="700" fill="#66717e" letter-spacing="2">HELD BY EVERY NODE</text>
+  </g>
+  <g filter="url(#soft)"><rect x="812" y="140" width="328" height="360" rx="22" fill="#161b22" stroke="#242b35" stroke-width="1.5"/></g>
+  <text x="838" y="182" font-size="16" font-weight="600" fill="#e9edf1">Swap</text>
+  <rect x="832" y="200" width="288" height="86" rx="14" fill="#12161b"/>
+  <text x="848" y="226" font-size="13" fill="#9aa4b1">Sell</text>
+  <text x="848" y="268" font-size="30" font-weight="600" fill="#e9edf1" letter-spacing="-0.5">2,500,000</text>
+  <rect x="1022" y="240" width="84" height="34" rx="17" fill="#1d232c" stroke="#2f3844"/><circle cx="1041" cy="257" r="10" fill="#f59e0b"/><text x="1056" y="262" font-size="14" font-weight="600" fill="#e9edf1">sats</text>
+  <circle cx="976" cy="296" r="15" fill="#161b22" stroke="#242b35" stroke-width="3"/><path d="M976 289v14m0 0-4-4m4 4 4-4" fill="none" stroke="#9aa4b1" stroke-width="2"/>
+  <rect x="832" y="306" width="288" height="86" rx="14" fill="#12161b"/>
+  <text x="848" y="332" font-size="13" fill="#9aa4b1">Buy</text>
+  <text x="848" y="374" font-size="30" font-weight="600" fill="#e9edf1" letter-spacing="-0.5">12,159.42</text>
+  <rect x="1006" y="346" width="100" height="34" rx="17" fill="#1d232c" stroke="#2f3844"/><circle cx="1025" cy="363" r="10" fill="#2dd4bf"/><text x="1040" y="368" font-size="14" font-weight="600" fill="#e9edf1">SHELL</text>
+  <text x="838" y="418" font-size="13" fill="#9aa4b1">1 SHELL = 200 sats</text><text x="1114" y="418" text-anchor="end" font-size="13" fill="#fbbf24">2.72% impact</text>
+  <rect x="832" y="434" width="288" height="46" rx="14" fill="#2dd4bf"/><text x="976" y="464" text-anchor="middle" font-size="18" font-weight="600" fill="#03211d">Swap</text>
+</svg>
