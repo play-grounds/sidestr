@@ -38,3 +38,11 @@ carried in a sidestr transaction over the relays; calls are read from that state
 way as deploys. `ide/abi.mjs` is a small ABI coder (static types, string, bytes, one level of arrays),
 `node ide/test/abi-test.mjs` checks it. No MetaMask, no RPC. Proven in Chrome on txbt4-evm: Token
 deployed from the page, symbol read, a transfer sent, the balance read back.
+
+## faucet/
+
+https://play-grounds.github.io/sidestr/faucet/ — the first contract on `sidestr:txbt4-evm`, a
+16-line faucet, explained line by line, with its live state (balance, drip, interval, drips so far)
+read from the page's own validated copy of the chain, and a button that asks it for a drip with the
+wallet's key. A baby-steps page for smart contracts: units (1 gwei = 1 sat), storage, events, require,
+ordering, gas versus drip.

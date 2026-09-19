@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" font-family="DejaVu Sans, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b0d12"/><stop offset="1" stop-color="#0f1d24"/></linearGradient>
+    <linearGradient id="top" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#7c5cff"/></linearGradient>
+    <radialGradient id="glow" cx="0.8" cy="0.5" r="0.6"><stop offset="0" stop-color="#2dd4bf" stop-opacity="0.18"/><stop offset="1" stop-color="#2dd4bf" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/><rect width="1200" height="630" fill="url(#glow)"/><rect width="1200" height="8" fill="url(#top)"/>
+  <text x="80" y="150" font-size="30" fill="#8b93a7" letter-spacing="6">SIDESTR · FIRST CONTRACT</text>
+  <text x="80" y="250" font-size="78" font-weight="700" fill="#eef1f7">a faucet,</text>
+  <text x="80" y="340" font-size="78" font-weight="700" fill="#eef1f7">explained</text>
+  <text x="80" y="410" font-size="28" fill="#8b93a7">sixteen lines of solidity, one at a time</text>
+  <text x="80" y="450" font-size="28" fill="#8b93a7">its live state, validated on your device</text>
+  <text x="80" y="490" font-size="28" fill="#8b93a7">and a button that asks it for a drip</text>
+  <text x="80" y="560" font-size="26" fill="#2dd4bf">play-grounds.github.io/sidestr/faucet</text>
+  <rect x="780" y="90" width="340" height="450" rx="20" fill="#151923" stroke="#262d3d" stroke-width="2"/>
+  <g font-family="DejaVu Sans Mono, Menlo, monospace" font-size="14" fill="#c9d1e3">
+    <text x="802" y="126"><tspan fill="#c4b5fd">contract</tspan> Faucet {</text>
+    <text x="802" y="152">  <tspan fill="#c4b5fd">uint256 public</tspan> drip</text>
+    <text x="802" y="176">    = <tspan fill="#2dd4bf">1000 gwei</tspan>;</text>
+    <text x="802" y="204">  <tspan fill="#c4b5fd">function</tspan> ask() {</text>
+    <text x="802" y="228">    <tspan fill="#c4b5fd">require</tspan>(…, <tspan fill="#fbbf24">"wait"</tspan>);</text>
+    <text x="802" y="252">    transfer(drip);</text>
+    <text x="802" y="276">  }</text>
+    <text x="802" y="300">}</text>
+  </g>
+  <rect x="802" y="326" width="296" height="1" fill="#262d3d"/>
+  <g font-size="15">
+    <text x="802" y="362" fill="#8b93a7">HOLDS</text><text x="802" y="392" font-size="30" font-weight="700" fill="#eef1f7">498,000 <tspan font-size="15" fill="#8b93a7">gwei = sats</tspan></text>
+    <text x="802" y="428" fill="#8b93a7">A DRIP  <tspan fill="#eef1f7" font-weight="700">1,000</tspan>   EVERY  <tspan fill="#eef1f7" font-weight="700">600 s</tspan></text>
+    <rect x="802" y="452" width="150" height="40" rx="10" fill="#7c5cff"/><text x="877" y="478" font-size="15" font-weight="700" fill="#fff" text-anchor="middle">ask for a drip</text>
+    <text x="802" y="522" fill="#34d399">✓ dripped in block 205</text>
+  </g>
+</svg>

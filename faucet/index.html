@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>a faucet contract</title>
+<meta property="og:site_name" content="sidestr">
+<meta property="og:title" content="a faucet contract, explained">
+<meta property="og:description" content="The first contract on the sidestr EVM chain, read line by line: what it holds, who can ask, what a drip costs, and what the page checks before you press the button.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://play-grounds.github.io/sidestr/faucet/">
+<meta property="og:image" content="https://play-grounds.github.io/sidestr/faucet/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="a faucet contract on a sidestr chain, explained line by line, with a button that asks it for a drip">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="a faucet contract, explained">
+<meta name="twitter:description" content="The first contract on the sidestr EVM chain, read line by line, with a live button.">
+<meta name="twitter:image" content="https://play-grounds.github.io/sidestr/faucet/og.png">
+<style>
+:root { --bg:#0b0d12; --panel:#151923; --panel2:#1d2331; --line:#262d3d; --text:#eef1f7; --mut:#8b93a7; --ac:#7c5cff; --ac2:#2dd4bf; --good:#34d399; --warn:#f5b84f; --bad:#f87171; --mono:ui-monospace,Menlo,Consolas,monospace }
+* { box-sizing:border-box } body { margin:0; background:var(--bg); color:var(--text); font:15px/1.55 -apple-system,Inter,Segoe UI,Roboto,sans-serif; padding:1.2rem 1rem 3rem } a { color:var(--ac2) }
+.wrap { max-width:860px; margin:0 auto } h1 { font-size:1.5rem; margin:.2rem 0 .3rem } .lead { color:var(--mut); margin:0 0 1rem }
+section { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:1rem 1.2rem; margin-bottom:1rem } h2 { margin:0 0 .6rem; font-size:.78rem; letter-spacing:.08em; text-transform:uppercase; color:var(--mut); font-weight:600 }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:.6rem } .stat { background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:.7rem .9rem } .stat .k { color:var(--mut); font-size:.75rem; letter-spacing:.05em; text-transform:uppercase } .stat .v { font-size:1.35rem; font-weight:700 } .stat .v small { font-size:.8rem; color:var(--mut); font-weight:500; margin-left:.25rem }
+pre { background:#0d1017; border:1px solid var(--line); border-radius:12px; padding:.9rem 1rem; overflow-x:auto; font:12.5px/1.5 var(--mono); margin:0 } .k { color:#c4b5fd } .c { color:#6b7280 } .s { color:#fbbf24 } .n { color:#2dd4bf }
+.line { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:1rem; padding:.55rem 0; border-top:1px solid var(--line); align-items:start } .line:first-of-type { border-top:0 } .line code { font-family:var(--mono); font-size:.82rem; color:#c9d1e3; white-space:pre-wrap; word-break:break-word } .line p { margin:0; color:var(--mut); font-size:.92rem } @media (max-width:640px) { .line { grid-template-columns:1fr } }
+button { background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:10px; padding:.6rem 1rem; font:inherit; cursor:pointer } button.ac { background:var(--ac); border-color:var(--ac); color:#fff; font-weight:600 } button:disabled { opacity:.4; cursor:default }
+.row { display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; margin:.5rem 0 } .mono { font-family:var(--mono); font-size:.85rem; word-break:break-all } .mut { color:var(--mut) } .good { color:var(--good) } .bad { color:var(--bad) } .warn { color:var(--warn) } .small { font-size:.85rem }
+.note { background:rgba(245,184,79,.08); border:1px solid rgba(245,184,79,.3); border-radius:10px; padding:.6rem .8rem; margin:.5rem 0; font-size:.92rem } .ok { background:rgba(52,211,153,.08); border:1px solid rgba(52,211,153,.3); border-radius:10px; padding:.6rem .8rem; margin:.5rem 0 } .err { background:rgba(248,113,113,.1); border:1px solid rgba(248,113,113,.35); border-radius:10px; padding:.6rem .8rem; margin:.5rem 0 }
+table { width:100%; border-collapse:collapse; font-size:.9rem } td, th { text-align:left; padding:.35rem .3rem; border-bottom:1px solid var(--line) } th { color:var(--mut); font-weight:500 } .r { text-align:right }
+</style>
+</head>
+<body><div class="wrap">
+<h1>a faucet contract, explained</h1>
+<p class="lead">The first contract on <span class="mono" id="chainid">sidestr:txbt4-evm</span>, a sidestr chain that runs Ethereum contracts with sats as gas. Sixteen lines of Solidity, what each does, its live state as this page has validated it, and a button. <a href="https://play-grounds.github.io/sidestr/ide/">Deploy your own in the ide</a> · <a href="https://play-grounds.github.io/sidestr/">directory</a></p>
+
+<section><h2>the contract, live</h2>
+  <div class="row"><span class="mut">address</span><span class="mono" id="addr">0x78598f93469a2df4673c1395b807df1ccc520222</span></div>
+  <div class="grid" id="stats"><div class="stat"><div class="k">holds</div><div class="v">…</div></div></div>
+  <p class="small mut" id="src">reading the chain…</p></section>
+
+<section><h2>ask it</h2><div id="you" class="mut small">loading…</div></section>
+
+<section><h2>the code, line by line</h2>
+  <pre id="code"></pre>
+  <div style="margin-top:.8rem">
+    <div class="line"><code>pragma solidity ^0.8.20;</code><p>Which compiler dialect. The page compiled this with 0.8.28, optimiser on, for the Cancun rules, which is what this chain runs.</p></div>
+    <div class="line"><code>uint256 public drip = 1000 gwei;</code><p>How much one drip pays. Solidity counts in wei; <b>on this chain 1 gwei is 1 sat</b>, so this is 1,000 sats. Writing a bare <code>1000</code> would pay 1,000 wei, a millionth of a sat, which is exactly the mistake the first version of this contract made.</p></div>
+    <div class="line"><code>uint256 public interval = 600;</code><p>Seconds between drips for one address. <code>public</code> makes the compiler write a free getter, which is what the numbers above are read from.</p></div>
+    <div class="line"><code>mapping(address =&gt; uint256) public last;</code><p>When each address last asked. A mapping is storage on the chain, paid for by whoever writes it; reads are free.</p></div>
+    <div class="line"><code>event Drip(address indexed to, uint256 amount);</code><p>A log line the contract writes when it pays. Logs are cheap, live in the receipt, and are how pages and explorers notice things without reading storage.</p></div>
+    <div class="line"><code>receive() external payable {}</code><p>Lets anyone top the faucet up by sending it value with no data. Without this a plain transfer to the contract would be refused.</p></div>
+    <div class="line"><code>require(block.timestamp &gt;= last[msg.sender] + interval, "wait");</code><p>The rule. <code>block.timestamp</code> is the sidestr block's time. If it fails, the whole call is undone and the reason "wait" comes back. This page runs the call on its own copy of the state first, so you see "wait" before you spend anything.</p></div>
+    <div class="line"><code>require(address(this).balance &gt;= drip, "dry");</code><p>A contract has its own balance, separate from yours. If it cannot pay, it says so instead of paying less.</p></div>
+    <div class="line"><code>last[msg.sender] = block.timestamp;</code><p>Write before paying. If the payment failed and this line came after it, a caller could ask again in the same block. Order matters in contracts.</p></div>
+    <div class="line"><code>payable(msg.sender).transfer(drip);</code><p>Pay the caller. The caller also paid gas for this call, about 56,000 gas at 1 gwei each, so a drip has to be worth more than that to be worth asking for. This one is not: it is a lesson, not an income.</p></div>
+    <div class="line"><code>emit Drip(msg.sender, drip);</code><p>Write the log. The activity below is built from these.</p></div>
+  </div></section>
+
+<section><h2>what happened to it</h2><div id="activity" class="mut small">…</div></section>
+
+<section><h2>how it got here</h2><p class="small mut" style="margin:0">Compiled with solc 0.8.28, deployed with the wallet library and the chain signer's key (the <a href="https://play-grounds.github.io/sidestr/ide/">ide</a> does the same from a page), funded with 500,000 gwei by a plain send to its address. The deploy cost 226,942 gas. Every block since then carries the state root that includes this contract's storage, and this page recomputed all of it before showing you a number. There is no server behind these figures.</p></section>
+</div>
+<script type="module">
+const WALLET = 'https://cdn.jsdelivr.net/gh/sidestr/wallet@f0ebd908a4a956d88ce9743266109bab9c9dd250/wallet.mjs';
+const FAUCET = '0x78598f93469a2df4673c1395b807df1ccc520222'; const chainId = 'sidestr:txbt4-evm';
+const $ = (id) => document.getElementById(id); const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); const n = (x) => Number(x).toLocaleString('en-US');
+const LS = { get: (k) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} } };
+$('code').innerHTML = `<span class="c">// SPDX-License-Identifier: MIT</span>
+<span class="k">pragma</span> solidity ^0.8.20;
+<span class="k">contract</span> Faucet {
+    <span class="k">uint256 public</span> drip = <span class="n">1000 gwei</span>;   <span class="c">// per drip; 1 gwei = 1 sat here</span>
+    <span class="k">uint256 public</span> interval = <span class="n">600</span>;     <span class="c">// seconds between drips per address</span>
+    <span class="k">mapping</span>(address =&gt; uint256) <span class="k">public</span> last;
+    <span class="k">event</span> Drip(address <span class="k">indexed</span> to, uint256 amount);
+    <span class="k">receive</span>() <span class="k">external payable</span> {}      <span class="c">// anyone can top it up by sending value</span>
+    <span class="k">function</span> ask() <span class="k">external</span> {
+        <span class="k">require</span>(block.timestamp &gt;= last[msg.sender] + interval, <span class="s">"wait"</span>);
+        <span class="k">require</span>(address(this).balance &gt;= drip, <span class="s">"dry"</span>);
+        last[msg.sender] = block.timestamp;
+        <span class="k">payable</span>(msg.sender).transfer(drip);
+        <span class="k">emit</span> Drip(msg.sender, drip);
+    }
+}`;
+let w, key = null, eth = null, lastMsg = '';
+try { const { openWallet } = await import(WALLET); w = await openWallet({ chain: chainId, onProgress: (s) => { $('src').textContent = s; } }); } catch (e) { $('src').innerHTML = `<span class="bad">could not open the chain: ${esc(e.message)}</span>`; throw e; }
+const sel = (sig) => w.selector(sig); 
+async function stats() {
+  const [bal, code, drip, interval] = await Promise.all([w.evmBalance(FAUCET), w.evmCode(FAUCET), w.evmCall({ to: FAUCET, data: await sel('drip()') }), w.evmCall({ to: FAUCET, data: await sel('interval()') })]);
+  const drips = w.evmActivity(FAUCET).filter((r) => r.to?.toLowerCase() === FAUCET && r.status === 1 && r.logs.length);
+  $('stats').innerHTML = [['holds', n(bal / 1000000000n), 'gwei = sats'], ['a drip', n(BigInt(drip.returnValue) / 1000000000n), 'gwei'], ['every', n(BigInt(interval.returnValue)), 'seconds per address'], ['drips so far', n(drips.length), ''], ['code', n((code.length - 2) / 2), 'bytes']].map(([k, v, u]) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}<small>${u}</small></div></div>`).join('');
+  $('src').innerHTML = `read from the page's own copy of the chain at block ${w.tip.height}, validated here · <a href="https://sidestr.com/wallet/?chain=${encodeURIComponent(chainId)}">wallet</a>`;
+  $('activity').innerHTML = drips.length ? `<table><tr><th>block</th><th>who asked</th><th class="r">gas paid</th><th class="r">got</th></tr>${drips.slice(0, 20).map((r) => `<tr><td class="mono">${r.height}</td><td class="mono">${esc(r.from.slice(0, 12))}…${eth && r.from.toLowerCase() === eth.toLowerCase() ? ' <span class="good">(you)</span>' : ''}</td><td class="r mono">${n(r.gasUsed)}</td><td class="r mono">1,000 gwei</td></tr>`).join('')}</table>` : '<span class="mut">no drips yet</span>';
+}
+async function you() {
+  const el = $('you'); key = LS.get(`sidestr_key:${chainId}`);
+  if (!key) { el.innerHTML = `<p>This page shares the wallet's key for this chain, and there is none in this browser yet.</p><div class="row"><button class="ac" id="mk">make a key</button><span class="mut small">or make one in the <a href="https://sidestr.com/wallet/?chain=${encodeURIComponent(chainId)}">wallet</a></span></div>`; $('mk').onclick = () => { key = w.newKey(); LS.set(`sidestr_key:${chainId}`, key); you(); }; return; }
+  const me = w.identity(key); eth = w.ethAddress(key); const sats = w.balance(me.script).spendable; const gwei = await w.evmBalance(eth);
+  const lastAsk = BigInt((await w.evmCall({ to: FAUCET, data: (await sel('last(address)')) + eth.slice(2).padStart(64, '0') })).returnValue); const wait = Math.max(0, Number(lastAsk) + 600 - Math.floor(Date.now() / 1000));
+  el.innerHTML = `<div class="row"><span class="mut">you</span><span class="mono">${esc(eth)}</span></div><div class="row"><span class="mut">EVM balance</span><b>${n(gwei / 1000000000n)} gwei</b><span class="mut">· sats on the chain: ${n(sats)}</span></div>
+    ${gwei < 70000n ? `<div class="note">Asking costs about 56,000 gas at 1 gwei, so you need gwei first. ${sats > 0 ? `<button id="dep">deposit 200,000 sats into the EVM</button>` : `Get sats from the <a href="https://sidestr.com/wallet/?chain=${encodeURIComponent(chainId)}">wallet</a> first, then come back.`}</div>` : ''}
+    ${lastAsk > 0n ? `<div class="small mut">you last asked at block time ${new Date(Number(lastAsk) * 1000).toLocaleTimeString()}${wait ? ` · the contract will say "wait" for another ${wait} s` : ' · you may ask again'}</div>` : ''}
+    <div class="row"><button class="ac" id="ask" ${gwei < 70000n ? 'disabled' : ''}>ask for a drip</button><span class="mut small">the page runs the call on its own state first; a "wait" or "dry" comes back before anything is sent</span></div><div id="out">${lastMsg}</div>`;
+  if ($('dep')) $('dep').onclick = () => go(() => Promise.resolve(w.build({ key, to: eth, amount: 200000, evmDeposit: true })), 'deposit');
+  $('ask').onclick = () => go(async () => w.buildEvm({ key, to: FAUCET, data: await sel('ask()') }), 'ask');
+}
+async function go(builder, what) {
+  const out = $('out'); out.innerHTML = '<div class="mut small">signing and dry-running…</div>'; let b;
+  try { b = await builder(); } catch (e) { return (out.innerHTML = `<div class="err">${esc(e.message)}</div>`); }
+  out.innerHTML = `<div class="note">${esc(b.note ?? what)}${b.gasUsed ? ` · the dry run used ${n(b.gasUsed)} gas · balance after ${n(b.evmAfter / 1000000000n)} gwei` : ''} · fee ${b.fee} sats · publishing to the relays…</div>`;
+  try { const r = await w.publish(b.hex); if (!r.accepted) throw new Error('no relay accepted the event');
+    for (let i = 0; i < 60; i++) { await new Promise((x) => setTimeout(x, 5000)); const m = await w.mined(b.txid); if (m) { const rc = b.ethHash ? w.evmReceipt(b.ethHash) : null; lastMsg = `<div class="ok">${rc ? (rc.status === 1 ? `dripped: 1,000 gwei to you in block ${m.height}, ${n(rc.gasUsed)} gas paid` : `mined in block ${m.height} but the call reverted`) : `mined in block ${m.height}`}</div>`; await stats(); await you(); return; } out.querySelector('.note').textContent = `waiting for the block… ${(i + 1) * 5} s`; }
+    out.innerHTML += '<div class="warn small">not mined after 5 minutes; refresh later</div>';
+  } catch (e) { out.innerHTML += `<div class="err">${esc(e.message)}</div>`; }
+}
+await stats(); await you();
+</script>
+</body>
+</html>
