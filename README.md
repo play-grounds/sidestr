@@ -28,3 +28,13 @@ https://play-grounds.github.io/sidestr/dao/ — a mockup of the Tideholm season 
 count, the treasury as coins the chain proves, the close as one pro-rata payout transaction,
 proposals with a veto window instead of a vote one holder decides anyway, and leaving as a peg-out.
 Treasury (mempool.guide, testnet4), holders and the book (the Tideholm API) are read live; proposals, buying and leaving are mocked and labelled. A "view as" toggle shows the other holder's side.
+
+## ide/
+
+https://play-grounds.github.io/sidestr/ide/?chain=<chain id> (default `sidestr:txbt4-evm`): a minimal
+Solidity IDE for chains that run the evm rule. The compiler (the published soljson bundle) runs in a
+web worker; a deploy is signed with your sidestr key, dry-run on the page's own validated state and
+carried in a sidestr transaction over the relays; calls are read from that state, sends go the same
+way as deploys. `ide/abi.mjs` is a small ABI coder (static types, string, bytes, one level of arrays),
+`node ide/test/abi-test.mjs` checks it. No MetaMask, no RPC. Proven in Chrome on txbt4-evm: Token
+deployed from the page, symbol read, a transfer sent, the balance read back.

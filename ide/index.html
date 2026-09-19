@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sidestr ide</title>
+<meta property="og:site_name" content="sidestr">
+<meta property="og:title" content="sidestr ide">
+<meta property="og:description" content="Write a contract, compile it in the browser, deploy it on a sidestr chain with the same key that holds your sats, and call it against the state your page has validated. No MetaMask, no RPC to trust.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://play-grounds.github.io/sidestr/ide/">
+<meta property="og:image" content="https://play-grounds.github.io/sidestr/ide/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="sidestr ide: compile, deploy and call Solidity on a sidestr chain from one page">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="sidestr ide">
+<meta name="twitter:description" content="Compile, deploy and call Solidity on a sidestr chain from one page, signed with your sidestr key, checked against the state the page validated.">
+<meta name="twitter:image" content="https://play-grounds.github.io/sidestr/ide/og.png">
+<style>
+:root { --bg:#0b0d12; --panel:#151923; --panel2:#1d2331; --line:#262d3d; --text:#eef1f7; --mut:#8b93a7; --ac:#7c5cff; --ac2:#2dd4bf; --good:#34d399; --warn:#f5b84f; --bad:#f87171; --mono:ui-monospace,Menlo,Consolas,monospace }
+* { box-sizing:border-box } body { margin:0; background:var(--bg); color:var(--text); font:14px/1.5 -apple-system,Inter,Segoe UI,Roboto,sans-serif; padding:1rem 1rem 3rem } a { color:var(--ac2) }
+.wrap { max-width:1200px; margin:0 auto } header { display:flex; align-items:baseline; gap:1rem; flex-wrap:wrap; margin-bottom:.8rem } header h1 { margin:0; font-size:1.2rem } header .mut { flex:1 }
+.cols { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:.8rem } @media (max-width:900px) { .cols { grid-template-columns:1fr } }
+section { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:.8rem 1rem; margin-bottom:.8rem } h2 { margin:0 0 .5rem; font-size:.75rem; letter-spacing:.08em; text-transform:uppercase; color:var(--mut); font-weight:600; display:flex; justify-content:space-between; align-items:center; gap:.5rem }
+textarea, input, select { width:100%; background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:10px; padding:.55rem .7rem; font:inherit; outline:none } textarea:focus, input:focus { border-color:var(--ac) } textarea.code { font-family:var(--mono); font-size:12.5px; line-height:1.45; min-height:420px; white-space:pre; tab-size:4 }
+button { background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:10px; padding:.5rem .85rem; font:inherit; cursor:pointer } button.ac { background:var(--ac); border-color:var(--ac); color:#fff; font-weight:600 } button:disabled { opacity:.4; cursor:default } button.sm { padding:.3rem .6rem; font-size:.8rem }
+.row { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; margin:.4rem 0 } .grow { flex:1 1 200px } .mono { font-family:var(--mono); font-size:.85rem } .mut { color:var(--mut) } .good { color:var(--good) } .bad { color:var(--bad) } .warn { color:var(--warn) } .small { font-size:.82rem }
+.err { background:rgba(248,113,113,.1); border:1px solid rgba(248,113,113,.35); border-radius:10px; padding:.5rem .7rem; font-family:var(--mono); font-size:.8rem; white-space:pre-wrap; margin:.4rem 0 } .ok { background:rgba(52,211,153,.08); border:1px solid rgba(52,211,153,.3); border-radius:10px; padding:.5rem .7rem; margin:.4rem 0 } .note { background:rgba(245,184,79,.08); border:1px solid rgba(245,184,79,.3); border-radius:10px; padding:.5rem .7rem; margin:.4rem 0; font-size:.9rem }
+.fn { border-top:1px solid var(--line); padding:.6rem 0 } .fn:first-child { border-top:0 } .fn .name { font-family:var(--mono); font-weight:600 } .fn .out { margin-top:.3rem; font-family:var(--mono); font-size:.85rem; word-break:break-all } .tag { display:inline-block; font-size:.7rem; padding:.05rem .4rem; border-radius:.3rem; background:rgba(124,92,255,.18); color:#c4b5fd; font-family:var(--mono); margin-left:.3rem } .tag.v { background:rgba(45,212,191,.15); color:var(--ac2) }
+.kv { display:grid; grid-template-columns:auto 1fr; gap:.15rem .8rem; font-size:.9rem } .kv span:first-child { color:var(--mut) } .addr { word-break:break-all }
+</style>
+</head>
+<body><div class="wrap">
+<header><h1>sidestr ide</h1><span class="mut">write, compile in the browser, deploy with your sidestr key, call against the state this page validated · <a href="https://play-grounds.github.io/sidestr/">directory</a> · <a id="walletlink" href="https://sidestr.com/wallet/">wallet</a></span><span class="mono mut" id="chainid"></span></header>
+<div id="boot" class="note">loading the chain…</div>
+<div class="cols" id="cols" hidden>
+<div>
+  <section><h2>contract <span><select id="samples" style="width:auto"><option value="token">Token.sol (ERC-20)</option><option value="counter">Counter.sol</option><option value="blank">blank</option></select> <select id="solcver" style="width:auto"><option>v0.8.28+commit.7893614a</option><option>v0.8.26+commit.8a97fa7a</option></select> <button class="ac" id="compile">compile</button></span></h2>
+    <textarea id="src" class="code" spellcheck="false"></textarea>
+    <div id="compout"></div></section>
+  <section><h2>deploy <span id="deployhead" class="mut small"></span></h2><div id="deploy" class="mut small">compile first</div></section>
+</div>
+<div>
+  <section><h2>you <span id="keyhead"></span></h2><div id="you"></div></section>
+  <section><h2>interact <span><button class="sm" id="loadabi">use the compiled ABI</button></span></h2>
+    <div class="row"><input id="caddr" class="grow mono" placeholder="contract address 0x…"><select id="known" style="width:auto"><option value="">deployed from here…</option></select></div>
+    <textarea id="abi" rows="3" class="mono" placeholder='ABI as JSON, or compile and press "use the compiled ABI"' style="font-size:.78rem"></textarea>
+    <div class="row"><button id="bind">bind</button><span class="mut small" id="bindmsg"></span></div>
+    <div id="fns"></div></section>
+</div>
+</div>
+</div>
+<script type="module">
+import { encodeMany, decodeMany, show } from './abi.mjs';
+const WALLET = 'https://cdn.jsdelivr.net/gh/sidestr/wallet@def3d786d9ecafeb424ecb8684641b8adcef2e47/wallet.mjs';
+const $ = (id) => document.getElementById(id); const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); const n = (x) => Number(x).toLocaleString('en-US');
+const LS = { get: (k) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} } };
+const q = new URLSearchParams(location.search); const chainId = q.get('chain') || 'sidestr:txbt4-evm'; $('chainid').textContent = chainId; $('walletlink').href = 'https://sidestr.com/wallet/?chain=' + encodeURIComponent(chainId);
+const SAMPLES = {
+  token: `// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n// The smallest honest ERC-20: the deployer gets the whole supply.\ncontract Token {\n    string public name; string public symbol; uint8 public immutable decimals; uint256 public totalSupply;\n    mapping(address => uint256) public balanceOf; mapping(address => mapping(address => uint256)) public allowance;\n    event Transfer(address indexed from, address indexed to, uint256 value); event Approval(address indexed owner, address indexed spender, uint256 value);\n    constructor(string memory n, string memory s, uint8 d, uint256 supply) { name = n; symbol = s; decimals = d; totalSupply = supply; balanceOf[msg.sender] = supply; emit Transfer(address(0), msg.sender, supply); }\n    function transfer(address to, uint256 v) external returns (bool) { require(balanceOf[msg.sender] >= v, "balance"); balanceOf[msg.sender] -= v; balanceOf[to] += v; emit Transfer(msg.sender, to, v); return true; }\n    function approve(address sp, uint256 v) external returns (bool) { allowance[msg.sender][sp] = v; emit Approval(msg.sender, sp, v); return true; }\n    function transferFrom(address f, address to, uint256 v) external returns (bool) { require(balanceOf[f] >= v, "balance"); require(allowance[f][msg.sender] >= v, "allowance"); allowance[f][msg.sender] -= v; balanceOf[f] -= v; balanceOf[to] += v; emit Transfer(f, to, v); return true; }\n}\n`,
+  counter: `// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\ncontract Counter {\n    uint256 public count;\n    event Bumped(address indexed by, uint256 to);\n    function bump() external { count += 1; emit Bumped(msg.sender, count); }\n    function set(uint256 to) external { count = to; }\n}\n`,
+  blank: `// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\ncontract Hello {\n    function greet(string calldata who) external pure returns (string memory) { return string.concat("hello, ", who); }\n}\n`,
+};
+$('src').value = LS.get('sidestr_ide_src') || SAMPLES.token; $('samples').onchange = () => { $('src').value = SAMPLES[$('samples').value]; }; $('src').oninput = () => LS.set('sidestr_ide_src', $('src').value);
+let w, key = null, me = null, eth = null, compiled = null, bound = null;
+try { const { openWallet } = await import(WALLET); w = await openWallet({ chain: chainId, onProgress: (s) => { $('boot').textContent = s; } }); if (!w.evm) throw new Error(`${chainId} does not run the evm rule`); }
+catch (e) { $('boot').innerHTML = `<span class="bad">could not open ${esc(chainId)}: ${esc(e.message)}</span>`; throw e; }
+$('boot').hidden = true; $('cols').hidden = false; key = LS.get(`sidestr_key:${chainId}`); renderYou();
+async function renderYou() {
+  const el = $('you'); if (!key) { $('keyhead').innerHTML = ''; el.innerHTML = `<p class="mut small">No key for ${esc(chainId)} in this browser. The wallet's key is shared: make one there, or here.</p><div class="row"><button class="ac" id="mk">make a key</button><input id="imp" class="grow mono" placeholder="or paste a 32-byte hex key"><button id="impgo">use</button></div>`;
+    $('mk').onclick = () => { key = w.newKey(); LS.set(`sidestr_key:${chainId}`, key); renderYou(); }; $('impgo').onclick = () => { const v = $('imp').value.trim().toLowerCase(); try { w.identity(v); key = v; LS.set(`sidestr_key:${chainId}`, key); renderYou(); } catch (e) { $('imp').value = ''; $('imp').placeholder = e.message; } }; return; }
+  me = w.identity(key); eth = w.ethAddress(key); const bal = w.balance(me.script); const evmBal = await w.evmBalance(eth);
+  $('keyhead').innerHTML = `<button class="sm" id="refresh">refresh</button>`;
+  el.innerHTML = `<div class="kv"><span>sidestr</span><span class="mono addr">${esc(me.address)} · <b>${n(bal.spendable)}</b> sats${bal.immature ? ` <span class="mut">(+${n(bal.immature)} immature)</span>` : ''}</span><span>ethereum</span><span class="mono addr">${esc(eth)} · <b>${n(Number(evmBal / 1000000000n))}</b> gwei</span></div>
+    ${bal.spendable === 0 ? `<div class="row"><button id="faucet">get test sats from the faucet</button><span class="mut small" id="faucetout"></span></div>` : ''}
+    ${evmBal === 0n && bal.spendable > 0 ? `<div class="row"><input id="depamt" class="mono" style="width:12rem" placeholder="sats to deposit" value="1000000"><button class="ac" id="deposit">deposit into the EVM</button><span class="mut small">gas and value come from here; 1 sat = 1 gwei</span></div>` : evmBal > 0n ? `<div class="row"><input id="depamt" class="mono" style="width:12rem" placeholder="sats to deposit"><button id="deposit">deposit more</button></div>` : ''}<div id="youout"></div>`;
+  $('refresh').onclick = async () => { await w.refresh(); renderYou(); };
+  if ($('faucet')) $('faucet').onclick = async () => { $('faucetout').textContent = 'asking…'; const r = await w.requestFaucet(me.address); if (!r.accepted) return ($('faucetout').textContent = 'no relay accepted the request'); for (let i = 0; i < 12; i++) { await new Promise((x) => setTimeout(x, 5000)); await w.refresh(); if (w.balance(me.script).total > 0) return renderYou(); $('faucetout').textContent = `waiting… ${(i + 1) * 5} s`; } $('faucetout').textContent = 'nothing arrived; is a faucet listening on this chain?'; };
+  if ($('deposit')) $('deposit').onclick = () => run(() => Promise.resolve(w.build({ key, to: eth, amount: Number($('depamt').value), evmDeposit: true })), 'youout', 'deposit', () => renderYou());
+}
+// sign, publish, wait for the block, then call done(receipt)
+async function run(builder, outId, what, done) {
+  const out = $(outId); out.innerHTML = '<div class="mut small">signing and dry-running on this page\'s state…</div>'; let b;
+  try { b = await builder(); if (!w.verify(b, key)) throw new Error('signature did not verify'); } catch (e) { return (out.innerHTML = `<div class="err">${esc(e.message)}</div>`); }
+  out.innerHTML = `<div class="note small">${esc(b.note ?? what)} · fee ${b.fee} sats${b.contractAddress ? ` · will be at <span class="mono">${esc(b.contractAddress)}</span>` : ''} · publishing…</div>`;
+  try { const r = await w.publish(b.hex); if (!r.accepted) throw new Error('no relay accepted the event'); out.innerHTML += `<div class="mut small" id="w-${outId}">waiting for the block…</div>`;
+    for (let i = 0; i < 60; i++) { await new Promise((x) => setTimeout(x, 5000)); const m = await w.mined(b.txid); if (m) { const rc = b.ethHash ? w.evmReceipt(b.ethHash) : null; out.innerHTML = `<div class="${rc && rc.status !== 1 ? 'err' : 'ok'}">${rc ? (rc.status === 1 ? 'done' : 'mined, but the call reverted') : 'mined'} in block ${m.height}${rc ? ` · ${n(rc.gasUsed)} gas` : ''}${rc?.contractAddress ? ` · contract <span class="mono">${esc(rc.contractAddress)}</span>` : ''}${rc?.logs?.length ? ` · ${rc.logs.length} log${rc.logs.length > 1 ? 's' : ''}` : ''}</div>`; done?.(rc, b); return; } const wt = $(`w-${outId}`); if (wt) wt.textContent = `waiting for the block… ${(i + 1) * 5} s`; }
+    out.innerHTML += '<div class="warn small">not mined after 5 minutes; refresh later</div>';
+  } catch (e) { out.innerHTML += `<div class="err">${esc(e.message)}</div>`; }
+}
+// --- compile ---------------------------------------------------------------------------------------
+const worker = new Worker('./compile-worker.js'); let seq = 0; const pending = new Map();
+worker.onmessage = (ev) => { const p = pending.get(ev.data.id); if (!p) return; pending.delete(ev.data.id); ev.data.error ? p.reject(new Error(ev.data.error)) : p.resolve(ev.data.output); };
+const compile = (source, version) => new Promise((resolve, reject) => { const id = ++seq; pending.set(id, { resolve, reject }); worker.postMessage({ id, version, input: { language: 'Solidity', sources: { 'Contract.sol': { content: source } }, settings: { optimizer: { enabled: true, runs: 200 }, evmVersion: 'cancun', outputSelection: { '*': { '*': ['abi', 'evm.bytecode.object', 'evm.methodIdentifiers'] } } } } }); });
+$('compile').onclick = async () => { const b = $('compile'); b.disabled = true; $('compout').innerHTML = '<div class="mut small">compiling (the first time loads the compiler, about 9 MB)…</div>';
+  try { const out = await compile($('src').value, $('solcver').value); const errors = (out.errors ?? []).filter((e) => e.severity === 'error'); const warnings = (out.errors ?? []).filter((e) => e.severity !== 'error');
+    if (errors.length) { compiled = null; $('compout').innerHTML = errors.map((e) => `<div class="err">${esc(e.formattedMessage)}</div>`).join(''); renderDeploy(); return; }
+    const contracts = Object.entries(out.contracts?.['Contract.sol'] ?? {}).map(([name, c]) => ({ name, abi: c.abi, bytecode: c.evm.bytecode.object, selectors: c.evm.methodIdentifiers }));
+    compiled = { contracts, pick: contracts.length - 1 }; $('compout').innerHTML = `<div class="ok small">compiled ${contracts.map((c) => `<b>${esc(c.name)}</b> (${c.bytecode.length / 2} bytes)`).join(', ')}${warnings.length ? ` · ${warnings.length} warning${warnings.length > 1 ? 's' : ''}` : ''}</div>${warnings.map((e) => `<div class="mut small mono">${esc(e.formattedMessage)}</div>`).join('')}`; renderDeploy(); }
+  catch (e) { compiled = null; $('compout').innerHTML = `<div class="err">${esc(e.message)}</div>`; } b.disabled = false; };
+// --- deploy ----------------------------------------------------------------------------------------
+function renderDeploy() {
+  const el = $('deploy'); if (!compiled?.contracts.length) { $('deployhead').textContent = ''; return (el.innerHTML = '<span class="mut small">compile first</span>'); }
+  const c = compiled.contracts[compiled.pick]; const ctor = c.abi.find((f) => f.type === 'constructor'); const inputs = ctor?.inputs ?? [];
+  $('deployhead').innerHTML = compiled.contracts.length > 1 ? `<select id="pick" style="width:auto">${compiled.contracts.map((x, i) => `<option value="${i}" ${i === compiled.pick ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select>` : esc(c.name);
+  el.innerHTML = `${inputs.map((i, k) => `<div class="row"><span class="mono mut" style="width:11rem">${esc(i.name || 'arg' + k)} <span class="tag">${esc(i.type)}</span></span><input class="grow mono" data-ctor="${k}" placeholder="${esc(i.type)}${/\[\]$/.test(i.type) ? ', comma separated' : ''}"></div>`).join('')}
+    ${ctor?.stateMutability === 'payable' ? `<div class="row"><span class="mono mut" style="width:11rem">value <span class="tag">gwei</span></span><input class="grow mono" id="ctorval" placeholder="0"></div>` : ''}
+    <div class="row"><button class="ac" id="deploygo" ${key ? '' : 'disabled'}>deploy ${esc(c.name)}</button><span class="mut small">${key ? 'signed with your key, dry-run here, then carried in a sidestr transaction' : 'make a key first'}</span></div><div id="deployout"></div>`;
+  if ($('pick')) $('pick').onchange = () => { compiled.pick = Number($('pick').value); renderDeploy(); };
+  $('deploygo').onclick = () => run(async () => { const vals = inputs.map((_, k) => el.querySelector(`[data-ctor="${k}"]`).value); const args = inputs.length ? encodeMany(inputs.map((i) => i.type), vals) : ''; return w.buildEvm({ key, data: c.bytecode + args, value: BigInt($('ctorval')?.value || 0) }); }, 'deployout', 'deploy', (rc) => { if (rc?.contractAddress) { remember(rc.contractAddress, c); $('caddr').value = rc.contractAddress; $('abi').value = JSON.stringify(c.abi); bind(); renderYou(); } });
+}
+// --- interact --------------------------------------------------------------------------------------
+const KNOWN = `sidestr_ide_contracts:${chainId}`; const known = () => { try { return JSON.parse(LS.get(KNOWN) || '[]'); } catch { return []; } };
+function remember(address, c) { const list = known().filter((x) => x.address !== address); list.unshift({ address, name: c.name, abi: c.abi, at: Date.now() }); LS.set(KNOWN, JSON.stringify(list.slice(0, 30))); renderKnown(); }
+function renderKnown() { const s = $('known'); s.innerHTML = '<option value="">deployed from here…</option>' + known().map((x) => `<option value="${esc(x.address)}">${esc(x.name)} · ${esc(x.address.slice(0, 10))}…</option>`).join(''); }
+renderKnown(); $('known').onchange = () => { const x = known().find((k) => k.address === $('known').value); if (x) { $('caddr').value = x.address; $('abi').value = JSON.stringify(x.abi); bind(); } };
+$('loadabi').onclick = () => { if (!compiled) return ($('bindmsg').textContent = 'compile first'); $('abi').value = JSON.stringify(compiled.contracts[compiled.pick].abi); $('bindmsg').textContent = 'ABI from ' + compiled.contracts[compiled.pick].name; };
+$('bind').onclick = bind;
+async function bind() {
+  const addr = $('caddr').value.trim(); let abi; try { abi = JSON.parse($('abi').value || '[]'); if (!Array.isArray(abi)) throw 0; } catch { return ($('bindmsg').innerHTML = '<span class="bad">the ABI is a JSON array</span>'); }
+  try { const code = await w.evmCode(addr); if (code === '0x') return ($('bindmsg').innerHTML = `<span class="bad">no contract at ${esc(addr.slice(0, 12))}… as this page sees the chain</span>`); $('bindmsg').innerHTML = `<span class="good">bound · ${(code.length - 2) / 2} bytes of code</span>`; } catch (e) { return ($('bindmsg').innerHTML = `<span class="bad">${esc(e.message)}</span>`); }
+  bound = { addr, abi }; const fns = abi.filter((f) => f.type === 'function');
+  $('fns').innerHTML = fns.map((f, i) => { const ro = f.stateMutability === 'view' || f.stateMutability === 'pure'; return `<div class="fn"><span class="name">${esc(f.name)}</span>(${f.inputs.map((x) => esc(x.type)).join(', ')})${f.outputs?.length ? ` → ${f.outputs.map((x) => esc(x.type)).join(', ')}` : ''}<span class="tag ${ro ? 'v' : ''}">${esc(f.stateMutability)}</span>
+    ${f.inputs.map((x, k) => `<div class="row"><span class="mono mut" style="width:9rem">${esc(x.name || 'arg' + k)}</span><input class="grow mono" data-f="${i}" data-k="${k}" placeholder="${esc(x.type)}${/\[\]$/.test(x.type) ? ', comma separated' : ''}"></div>`).join('')}
+    ${f.stateMutability === 'payable' ? `<div class="row"><span class="mono mut" style="width:9rem">value</span><input class="grow mono" data-f="${i}" data-val="1" placeholder="gwei"></div>` : ''}
+    <div class="row"><button class="sm ${ro ? '' : 'ac'}" data-call="${i}" ${ro || key ? '' : 'disabled'}>${ro ? 'read' : 'send'}</button><span class="out" id="fo-${i}"></span></div></div>`; }).join('') || '<span class="mut small">no functions in that ABI</span>';
+  $('fns').querySelectorAll('[data-call]').forEach((b) => b.onclick = () => callFn(fns[Number(b.dataset.call)], Number(b.dataset.call)));
+}
+async function callFn(f, i) {
+  const out = $(`fo-${i}`); const vals = f.inputs.map((_, k) => $('fns').querySelector(`[data-f="${i}"][data-k="${k}"]`).value); const valIn = $('fns').querySelector(`[data-f="${i}"][data-val]`);
+  let data; try { const sel = await w.selector(`${f.name}(${f.inputs.map((x) => x.type).join(',')})`); data = sel + encodeMany(f.inputs.map((x) => x.type), vals); } catch (e) { return (out.innerHTML = `<span class="bad">${esc(e.message)}</span>`); }
+  const ro = f.stateMutability === 'view' || f.stateMutability === 'pure';
+  if (ro) { out.innerHTML = '<span class="mut">reading…</span>'; const r = await w.evmCall({ from: eth ?? undefined, to: bound.addr, data }); if (!r.ok) return (out.innerHTML = `<span class="bad">reverts: ${esc(r.error)}</span>`); try { out.innerHTML = `<span class="good">${esc(show(decodeMany(f.outputs.map((x) => x.type), r.returnValue)))}</span> <span class="mut">· ${n(r.gasUsed)} gas</span>`; } catch { out.innerHTML = `<span class="mono">${esc(r.returnValue)}</span>`; } return; }
+  out.innerHTML = ''; const holder = document.createElement('div'); holder.id = `fx-${i}`; out.appendChild(holder);
+  run(() => w.buildEvm({ key, to: bound.addr, data, value: BigInt(valIn?.value || 0) }), `fx-${i}`, f.name, () => renderYou());
+}
+</script>
+</body>
+</html>
