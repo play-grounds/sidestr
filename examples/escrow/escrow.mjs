@@ -17,9 +17,14 @@ export const EVENT = { Locked: 'Locked(bytes32,address,address,uint256,uint64,by
 // "late", the payer could refund, and the secret would be public for nothing. Two block intervals.
 export const MARGIN = 120;
 export const MIN_TERM = 600;      // the shortest deadline the page offers, for the same reason
-// what a role must have in the EVM before it can act, with headroom; the chain charged 114,767,
-// 41,622 and 40,482 gas for these in test/escrow-test.mjs, and the deployment 580,854
-export const GAS = { lock: 125000n, claim: 50000n, refund: 45000n };
+// The gas limit each action is sent with, and so also what a role must hold in the EVM before it can
+// act (the limit is demanded up front; unused gas is not charged). These are explicit because the
+// wallet's automatic limit is not safe here: it dry-runs once at a high limit, then re-signs at
+// gasUsed × 1.25 + 5,000, and a call that ends in `.call` can need more than that at the lower limit.
+// The transaction is still consensus-valid, so checkTx says ok, and it is published and runs out of
+// gas — which is how claim 0x370aac75… on txbt4-evm spent 48,414 sats in block 531 and did nothing.
+// The chain charged 114,767 for a lock, 41,622 for a claim and 40,482 for a refund; these are limits.
+export const GAS = { lock: 180000n, claim: 90000n, refund: 80000n };
 
 const hex = (b) => '0x' + Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
 const bytes = (h) => Uint8Array.from(String(h).replace(/^0x/i, '').match(/../g) ?? [], (x) => parseInt(x, 16));
@@ -71,6 +76,8 @@ export async function history(w, escrow, { address = null } = {}) {
       else out.push({ kind: 'refunded', id, ...at });
     }
   }
+  const locked = new Map(out.filter((e) => e.kind === 'locked').map((e) => [low(e.id), e]));
+  for (const e of out) if (e.kind !== 'locked') { const l = locked.get(low(e.id)); if (l) Object.assign(e, { payer: l.payer, payee: l.payee, wei: l.wei, sats: l.sats, hash: l.hash, deadline: l.deadline }); }
   const mine = (e) => !address || same(address, e.payer) || same(address, e.payee) || same(address, e.from);
   return out.filter(mine).sort((a, b) => b.height - a.height);
 }
@@ -82,7 +89,10 @@ export const settlementOf = (events, id) => events.find((e) => low(e.id) === low
 // action that role may take next, and the sentence that says why when there is none. The page is a
 // table of these; nothing in it decides policy of its own.
 export function stateOf(lock, { now = Math.floor(Date.now() / 1000), me = null, settled = null, margin = MARGIN } = {}) {
-  const role = !lock ? (isAddr(me) ? 'payer' : 'observer') : same(me, lock.payer) ? 'payer' : same(me, lock.payee) ? 'payee' : 'observer';
+  // the role is read off whichever record there is, never assumed: a claimed lock is gone from
+  // storage but its Claimed record still says who the two parties were
+  const party = (o) => same(me, o?.payer) ? 'payer' : same(me, o?.payee) ? 'payee' : null;
+  const role = lock ? (party(lock) ?? 'observer') : settled ? (party(settled) ?? 'observer') : isAddr(me) ? 'payer' : 'observer';
   const at = (state, action, why, secondsLeft = 0) => ({ state, role, action, why, secondsLeft });
   if (!lock) {
     if (settled?.kind === 'claimed') return at('claimed', null, `taken by the payee in block ${settled.height}; the preimage ${settled.preimage.slice(0, 12)}… is public now and is the receipt`);
@@ -108,6 +118,9 @@ export async function dryRun(w, { from, to, data, value = 0n }) {
   return { ok: r.ok, gasUsed: r.gasUsed, reason: r.ok ? null : /"(.*)"/.exec(r.error ?? '')?.[1] ?? r.error };
 }
 const refuse = (what, d) => { throw new Error(d.reason === 'gone' ? 'that lock is not on the chain: it was claimed, refunded, or never made' : `the chain would refuse this ${what}: ${d.reason}`); };
+// gasUsed at the gas limit means the dry run ran out of gas: the transaction would be valid, would be
+// mined, would cost its sats and would do nothing. Never publish that.
+const finished = (b, what) => { if (b.gasUsed >= b.gasLimit) throw new Error(`this ${what} would run out of gas: the dry run used the whole ${b.gasLimit.toLocaleString('en-US')} gwei limit. Nothing has been sent.`); return b; };
 
 export async function buildLock(w, { key, escrow, payee, hash, deadline, sats, minTerm = MIN_TERM }) {
   const from = w.ethAddress(key); sats = BigInt(sats);
@@ -118,7 +131,7 @@ export async function buildLock(w, { key, escrow, payee, hash, deadline, sats, m
   const data = (await w.selector(SIG.lock)) + encodeMany(['address', 'bytes32', 'uint64'], [payee, hash, deadline]);
   const d = await dryRun(w, { from, to: escrow, data, value: sats }); if (!d.ok) refuse('lock', d);
   const id = await idOf(w, { payer: from, payee, hash, deadline });
-  const b = await w.buildEvm({ key, to: escrow, value: sats, data, note: `lock ${sats.toLocaleString('en-US')} sats for ${payee} until ${new Date(deadline * 1000).toLocaleString()}: only the preimage releases it, and only to them` });
+  const b = finished(await w.buildEvm({ key, to: escrow, value: sats, data, gasLimit: GAS.lock, note: `lock ${sats.toLocaleString('en-US')} sats for ${payee} until ${new Date(deadline * 1000).toLocaleString()}: only the preimage releases it, and only to them` }), 'lock');
   return { ...b, id, deadline, sats, payee: low(payee), hash: low(hash) };
 }
 export async function buildClaim(w, { key, escrow, lock, secret, now = Math.floor(Date.now() / 1000), margin = MARGIN }) {
@@ -128,7 +141,7 @@ export async function buildClaim(w, { key, escrow, lock, secret, now = Math.floo
   if (left <= margin) throw new Error(`the deadline is ${left} s away: a claim published now may land in a block after it. It would revert, the payer could refund, and your secret would be public for nothing.`);
   const data = (await w.selector(SIG.claim)) + encodeMany(['bytes32', 'bytes32'], [lock.id, secret]);
   const d = await dryRun(w, { from, to: escrow, data }); if (!d.ok) refuse('claim', d);
-  const b = await w.buildEvm({ key, to: escrow, data, note: `claim ${lock.sats.toLocaleString('en-US')} sats: this publishes the secret, which is what pays ${lock.payee}` });
+  const b = finished(await w.buildEvm({ key, to: escrow, data, gasLimit: GAS.claim, note: `claim ${lock.sats.toLocaleString('en-US')} sats: this publishes the secret, which is what pays ${lock.payee}` }), 'claim');
   return { ...b, id: lock.id, sats: lock.sats };
 }
 export async function buildRefund(w, { key, escrow, lock, now = Math.floor(Date.now() / 1000) }) {
@@ -136,8 +149,9 @@ export async function buildRefund(w, { key, escrow, lock, now = Math.floor(Date.
   if (lock.deadline > now) throw new Error(`the deadline is ${lock.deadline - now} s away; until it passes the payee may still claim and a refund cannot be sent`);
   const data = (await w.selector(SIG.refund)) + encodeMany(['bytes32'], [lock.id]);
   const d = await dryRun(w, { from, to: escrow, data }); if (!d.ok) refuse('refund', d);
-  const b = await w.buildEvm({ key, to: escrow, data, note: `refund ${lock.sats.toLocaleString('en-US')} sats to ${lock.payer}: the payee never claimed` });
+  const b = finished(await w.buildEvm({ key, to: escrow, data, gasLimit: GAS.refund, note: `refund ${lock.sats.toLocaleString('en-US')} sats to ${lock.payer}: the payee never claimed` }), 'refund');
   return { ...b, id: lock.id, sats: lock.sats };
 }
-// What a role needs in the EVM before it can do anything, in gwei = sats: gas, plus the value for a lock.
+// What a role needs in the EVM before it can act, in gwei = sats: the gas limit, which is demanded up
+// front whether or not it is used, plus the value for a lock.
 export const needs = (kind, sats = 0n) => GAS[kind] + (kind === 'lock' ? BigInt(sats) : 0n);

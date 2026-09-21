@@ -93,6 +93,8 @@ t('the lock is gone from storage', (await E.readLock(w, escrow, id)) === null);
 const ev2 = await E.history(w, escrow); const done = E.settlementOf(ev2, id);
 t('the Claimed log carries the preimage, so the secret is on the chain as the receipt', done?.kind === 'claimed' && done.preimage === secret);
 t('a settled lock reads as claimed, with no action for anyone', E.stateOf(null, { me: pe.eth, settled: done }).state === 'claimed' && E.stateOf(null, { me: pr.eth, settled: done }).action === null);
+t('and it still knows who the two parties were, though the lock is gone from storage', done.payer === pr.eth.toLowerCase() && done.payee === pe.eth.toLowerCase() && E.stateOf(null, { me: pe.eth, settled: done }).role === 'payee' && E.stateOf(null, { me: pr.eth, settled: done }).role === 'payer' && E.stateOf(null, { me: '0x' + '33'.repeat(20), settled: done }).role === 'observer');
+t('a settled lock is in its parties\' history, found by either address', (await E.history(w, escrow, { address: pe.eth })).some((x) => x.kind === 'claimed' && x.id === id));
 const gone = await E.dryRun(w, { from: pe.eth, to: escrow, data: (await w.selector(E.SIG.claim)) + id.slice(2) + secret.slice(2) });
 t('claiming twice reverts "gone"', !gone.ok && gone.reason === 'gone');
 

@@ -26,10 +26,10 @@ buy from each other, in its smallest honest form.
 | --- | --- | --- |
 | `Escrow.sol` | the contract, 34 lines | live at `0x42c6f8bd9c1f44ce52e509b16139023a5d2998d5` on `sidestr:txbt4-evm`, block 520 |
 | `escrow.mjs` | all the logic, no DOM | done; §4 is its API |
-| `test/escrow-test.mjs` | end to end on a throwaway chain | 39 checks, all passing |
+| `test/escrow-test.mjs` | end to end on a throwaway chain | 41 checks, all passing |
 | `test/compile.mjs` | Escrow.sol → `test/fixtures/` | solc 0.8.28, optimiser 200, cancun |
-| `index.html` | **the page** | to build |
-| `og.svg` · `og.png` | 1200×630, rendered with headless Chromium | to build |
+| `index.html` | the page | built; proven in Chrome on `txbt4-evm` — see §8 |
+| `og.svg` · `og.png` | 1200×630, rendered with headless Chromium | done |
 
 Measured on a throwaway chain, and the deployment on the live one (1 gas = 1 gwei = 1 sat): deploy
 580,854 · lock 114,767 · claim 41,622 · refund 40,482. Creation code is 2,468 bytes, runtime 2,440.
@@ -71,7 +71,9 @@ import * as E from './escrow.mjs';
 E.GWEI            // 1000000000n — wei per sat. The contract counts wei; people are shown sats.
 E.MARGIN          // 120 s. Inside this much of the deadline, a claim is unsafe to publish.
 E.MIN_TERM        // 600 s. The shortest deadline the page may offer.
-E.GAS             // { lock: 125000n, claim: 50000n, refund: 45000n } gwei, with headroom
+E.GAS             // { lock: 180000n, claim: 90000n, refund: 80000n } — the gas LIMIT each action is
+                  // sent with, and so what the role must hold up front. See §7: this page sets its
+                  // own limits because the wallet's automatic one can silently under-shoot.
 E.SIG · E.EVENT   // the signatures, if the page ever needs a raw call
 
 // secrets — no chain needed
@@ -170,15 +172,60 @@ Four things the page must handle that are not obvious from the table:
 - Licence AGPL-3.0-or-later. One-line commit messages saying what changed and why. No attribution
   footers or session links in commits.
 
-## 7. Done when
+## 7. The gas limit, and why this page sets its own
+
+The wallet picks a gas limit for you: it dry-runs once at a high limit and re-signs at
+`gasUsed × 1.25 + 5,000`. For a call that ends in `.call`, that measurement is taken under
+conditions the real transaction does not repeat, and the limit can come out below what the
+transaction actually needs. The transaction is then still **valid** — it is mined, it costs its
+sats, and it does nothing.
+
+Worse, nothing in the build tells you. `checkTx` executes the transaction and writes a receipt with
+the real status, then deletes that receipt before returning (`spec/siding/lib/overlays/evm.mjs`), and
+its `ok` means only "a validator would accept this into a block". So `buildEvm` returns happily,
+`b.gasUsed` is the gas the failing run burned, and the page publishes it.
+
+This is not hypothetical: claims `0x370aac75…` (block 531) and `0x4ef5f782…` (block 532) on
+`txbt4-evm` were both built this way, both went out with a 48,414 limit, both spent exactly 48,414
+sats, and both left the lock untouched. The claim needs about 57,000 — 21,000 intrinsic plus ~35,000
+of execution — and the estimate had only counted the execution.
+
+`escrow.mjs` therefore does two things, and any page built on the wallet's EVM side should copy both:
+
+- **it sets its own `gasLimit`** per action, from `E.GAS` (unused gas is not charged, so a generous
+  limit costs nothing but the balance it demands up front); and
+- **it refuses to publish a build whose `gasUsed` reached its `gasLimit`**, which is the tell for a
+  dry run that ran out of gas. That check is three lines and it would have caught both failures.
+
+## 8. Done when
 
 The page makes a lock on `txbt4-evm` and shows it; a second browser with the payee's key claims it
 with the preimage and the sats arrive; a lock left to expire refunds; a wrong preimage and an early
 refund each say why *before* anything is signed; every figure on the page is read from the page's own
 validated state; it reads well on a phone; `node test/escrow-test.mjs` still passes.
 
+Proven on the live chain, from the page, in Chrome, at
+`0x42c6f8bd9c1f44ce52e509b16139023a5d2998d5`, every path:
+
+| block | what | gas |
+| --- | --- | --- |
+| 530 | locked 5,000 sats | 114,767 |
+| 534 | claimed by the payee with the preimage | 41,622 |
+| 535 | locked 5,000 sats **from the page's own form** | 114,767 |
+| 537 | refunded to the payer after the deadline | 40,472 |
+
+and, without spending anything: a wrong preimage refused in the page before any call, the claim
+button dark until the secret hashes to the lock, the page rewriting its URL to the lock it has just
+made and keeping both the payee link and the secret across the re-render, the state pill naming each
+key's role from the chain's records, and the history built from the contract's logs.
+
 Then report, as the brief asks: the commit, the live URL, the test output, the gas of each call, and
-the issues filed. The ones this design already expects to file:
+the issues filed:
+
+0. **`buildEvm` can hand back a transaction that cannot succeed, and says nothing** — §7. Two asks:
+   have `buildEvm` return the dry run's execution status and refuse (or at least report) a build that
+   reverts or runs out of gas, and have `checkTx` stop discarding the receipt it just made. This one
+   cost real sats twice before it was understood, and every page on this wallet is exposed to it.
 
 1. **`ide/abi.mjs` is not in the wallet.** `w.abi.encode` handles only words and its `selector` knows
    only the ERC-20 constants, so anything with a `bytes32` or `uint64` argument needs the

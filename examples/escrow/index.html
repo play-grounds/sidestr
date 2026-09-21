@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>an escrow contract</title>
+<meta property="og:site_name" content="sidestr">
+<meta property="og:title" content="an escrow contract, explained">
+<meta property="og:description" content="A hash-and-deadline lock on the sidestr EVM chain: the payer locks sats naming a payee, a hash and a deadline; only the preimage releases them, and only to the payee. Thirty-four lines, read line by line, with the lock live.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://play-grounds.github.io/sidestr/examples/escrow/">
+<meta property="og:image" content="https://play-grounds.github.io/sidestr/examples/escrow/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="an escrow contract on a sidestr chain: a hash lock and a deadline, no arbiter, explained line by line">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="an escrow contract, explained">
+<meta name="twitter:description" content="A hash-and-deadline lock, read line by line, with the lock live and one honest button.">
+<meta name="twitter:image" content="https://play-grounds.github.io/sidestr/examples/escrow/og.png">
+<style>
+:root { --bg:#0b0d12; --panel:#151923; --panel2:#1d2331; --line:#262d3d; --text:#eef1f7; --mut:#8b93a7; --ac:#7c5cff; --ac2:#2dd4bf; --good:#34d399; --warn:#f5b84f; --bad:#f87171; --mono:ui-monospace,Menlo,Consolas,monospace }
+* { box-sizing:border-box } body { margin:0; background:var(--bg); color:var(--text); font:15px/1.55 -apple-system,Inter,Segoe UI,Roboto,sans-serif; padding:1.2rem 1rem 3rem } a { color:var(--ac2) }
+.wrap { max-width:860px; margin:0 auto } h1 { font-size:1.5rem; margin:.2rem 0 .3rem } .lead { color:var(--mut); margin:0 0 1rem }
+section { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:1rem 1.2rem; margin-bottom:1rem } h2 { margin:0 0 .6rem; font-size:.78rem; letter-spacing:.08em; text-transform:uppercase; color:var(--mut); font-weight:600 }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.6rem } .stat { background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:.7rem .9rem } .stat .k { color:var(--mut); font-size:.75rem; letter-spacing:.05em; text-transform:uppercase } .stat .v { font-size:1.25rem; font-weight:700; word-break:break-word } .stat .v small { font-size:.8rem; color:var(--mut); font-weight:500; margin-left:.25rem }
+pre { background:#0d1017; border:1px solid var(--line); border-radius:12px; padding:.9rem 1rem; overflow-x:auto; font:12.5px/1.5 var(--mono); margin:0 } .k { color:#c4b5fd } .c { color:#6b7280 } .s { color:#fbbf24 } .n { color:#2dd4bf }
+.line { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:1rem; padding:.55rem 0; border-top:1px solid var(--line); align-items:start } .line:first-of-type { border-top:0 } .line code { font-family:var(--mono); font-size:.82rem; color:#c9d1e3; white-space:pre-wrap; word-break:break-word } .line p { margin:0; color:var(--mut); font-size:.92rem } @media (max-width:640px) { .line { grid-template-columns:1fr } }
+button { background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:10px; padding:.6rem 1rem; font:inherit; cursor:pointer } button.ac { background:var(--ac); border-color:var(--ac); color:#fff; font-weight:600 } button:disabled { opacity:.4; cursor:default }
+input, select { background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:10px; padding:.55rem .7rem; font:inherit; width:100% } input.mono { font-family:var(--mono); font-size:.85rem } label { display:block; color:var(--mut); font-size:.8rem; margin:.4rem 0 .2rem }
+.row { display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; margin:.5rem 0 } .mono { font-family:var(--mono); font-size:.85rem; word-break:break-all } .mut { color:var(--mut) } .good { color:var(--good) } .bad { color:var(--bad) } .warn { color:var(--warn) } .small { font-size:.85rem }
+.note { background:rgba(245,184,79,.08); border:1px solid rgba(245,184,79,.3); border-radius:10px; padding:.6rem .8rem; margin:.5rem 0; font-size:.92rem } .ok { background:rgba(52,211,153,.08); border:1px solid rgba(52,211,153,.3); border-radius:10px; padding:.6rem .8rem; margin:.5rem 0 } .err { background:rgba(248,113,113,.1); border:1px solid rgba(248,113,113,.35); border-radius:10px; padding:.6rem .8rem; margin:.5rem 0 }
+table { width:100%; border-collapse:collapse; font-size:.9rem } td, th { text-align:left; padding:.35rem .3rem; border-bottom:1px solid var(--line) } th { color:var(--mut); font-weight:500 } .r { text-align:right }
+.pill { display:inline-block; border:1px solid var(--line); border-radius:999px; padding:.1rem .6rem; font-size:.78rem; color:var(--mut) }
+#cd { font-variant-numeric:tabular-nums }
+</style>
+</head>
+<body><div class="wrap">
+<h1>an escrow contract, explained</h1>
+<p class="lead">A hash-and-deadline lock on <span class="mono" id="chainid">sidestr:txbt4-evm</span>, a sidestr chain that runs Ethereum contracts with sats as gas. The payer locks sats naming a payee, a hash and a deadline: before the deadline only the preimage releases them, and only to the payee; after it only the payer can take them back. No arbiter, no owner, no admin key — the third role is <b>none</b>. Thirty-four lines of Solidity, what each does, and the lock live as this page has validated it. <a href="https://play-grounds.github.io/sidestr/">directory</a></p>
+
+<section><h2>the lock, live</h2>
+  <div class="row"><span class="mut">contract</span><span class="mono" id="addr">…</span><span class="pill" id="statepill">…</span></div>
+  <div class="grid" id="stats"></div>
+  <p class="small mut" id="src">reading the chain…</p>
+  <p class="small" id="why" style="margin:.4rem 0 0"></p>
+  <p class="small mut" id="clock" style="margin:.2rem 0 0"></p>
+</section>
+
+<section><h2>your one action</h2><div id="you" class="mut small">loading…</div></section>
+
+<section><h2>the code, line by line</h2>
+  <pre id="code"></pre>
+  <div style="margin-top:.8rem">
+    <div class="line"><code>struct Lock { address payer; uint64 deadline; address payee; uint256 amount; bytes32 hash; }</code><p>What a lock is: who paid, who can receive, how much, until when, and the hash of the secret that releases it. The field order is deliberate — see the next line.</p></div>
+    <div class="line"><code>mapping(bytes32 =&gt; Lock) public locks; <span class="c">// payer and deadline share one slot</span></code><p>Storage on the chain, keyed by the lock's id. <code>payer</code> (20 bytes) and <code>deadline</code> (8) are written next to each other so they share one 32-byte slot: a lock writes four slots instead of five, saving 20,000 gas — 20,000 sats — by ordering two fields well.</p></div>
+    <div class="line"><code>event Locked(bytes32 indexed id, address indexed payer, address indexed payee, uint256 amount, uint64 deadline, bytes32 hash);</code><p>The log a lock writes. Everything a page needs to show a lock is in this one event, which is how the history below is built.</p></div>
+    <div class="line"><code>return keccak256(abi.encode(payer, payee, h, deadline));</code><p><b>The id is content-addressed</b>, not a counter: keccak of exactly what the lock says. The payer can compute the id before sending anything, so it goes straight into a link — and nobody can squat on it, because <code>payer</code> is <code>msg.sender</code> and cannot be forged.</p></div>
+    <div class="line"><code>require(msg.value &gt; 0, "empty"); require(payee != address(0), "nobody"); require(deadline &gt; block.timestamp, "past");</code><p>The three ways to make a meaningless lock, refused before anything is written.</p></div>
+    <div class="line"><code>require(locks[id].payer == address(0), "taken");</code><p>The same id means the same lock, so it cannot be overwritten with different terms.</p></div>
+    <div class="line"><code>function claim(bytes32 id, bytes32 preimage) external {</code><p><b><code>claim</code> checks no caller.</b> The secret is the authorisation, not the sender: anyone may push a claim through for a payee with no gwei, and the money goes to the payee the lock names whoever pays the gas. One <code>require</code> fewer.</p></div>
+    <div class="line"><code>require(block.timestamp &lt; l.deadline, "late");</code><p>The claim window. <code>&lt;</code> here against <code>&gt;=</code> in refund means the two windows can never both be open — which is what makes the missing caller check safe rather than sloppy.</p></div>
+    <div class="line"><code>require(sha256(abi.encodePacked(preimage)) == l.hash, "hash");</code><p><b><code>sha256</code>, not <code>keccak256</code></b> — about 60 gas against 36, and in exchange the same secret unlocks a Bitcoin-style HTLC on the sats side of a sidestr chain. The hash is the bridge to everything else; two locks with the same hash on two chains are an atomic swap, and the revealed preimage is the receipt that makes them atomic.</p></div>
+    <div class="line"><code>delete locks[id]; <span class="c">// delete before paying</span></code><p>The lock is gone before a single wei moves. <code>transfer</code>'s 2,300-gas stipend breaks contract payees, so this pays with <code>.call</code>; <code>.call</code> is only safe because the callee runs after the delete — the faucet's "write before paying" lesson, one notch harder.</p></div>
+    <div class="line"><code>(bool paid, ) = l.payee.call{value: l.amount}(""); require(paid, "payee");</code><p>Pay the payee. If the payee is a contract that refuses the money, the claim reverts and the lock stays claimable.</p></div>
+    <div class="line"><code>require(block.timestamp &gt;= l.deadline, "early");</code><p>The refund window: only after the deadline, and only the payer takes it back — that is enforced by the lock's fields, not by checking <code>msg.sender</code>.</p></div>
+  </div></section>
+
+<section><h2>what has happened to this contract</h2><div id="activity" class="mut small">…</div></section>
+
+<section><h2>how it got here</h2><p class="small mut" style="margin:0">Compiled with solc 0.8.28, optimiser 200 runs, Cancun rules, from <code>Escrow.sol</code> (<a href="./Escrow.sol">the file</a>, and <a href="./escrow.mjs">escrow.mjs</a>, the logic this page renders). Deployed to <span class="mono" id="addr2">…</span> in block 520 at a cost of 580,854 gas; creation code 2,468 bytes, runtime 2,440. On a throwaway chain the same build charged 114,767 gas for a lock, 41,622 for a claim, 40,482 for a refund, at 1 gwei = 1 sat each. The one assumption the design makes of the chain's VM — a working sha256 precompile at address 0x02 — is checked on this page before anything is built on it<span id="shaok"></span>. Every number above is read from the page's own copy of the chain, validated here; there is no server behind it.</p></section>
+</div>
+<script type="module">
+import * as E from './escrow.mjs';
+const WALLET = 'https://cdn.jsdelivr.net/gh/sidestr/wallet@f0ebd908a4a956d88ce9743266109bab9c9dd250/wallet.mjs';
+const chainId = new URLSearchParams(location.search).get('chain') ?? 'sidestr:txbt4-evm';
+let lockParam = new URLSearchParams(location.search).get('lock');
+const escrow = new URLSearchParams(location.search).get('escrow') ?? E.ESCROW[chainId];
+const $ = (id) => document.getElementById(id); const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); const n = (x) => Number(x).toLocaleString('en-US');
+const LS = { get: (k) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} } };
+const secKey = (id) => `sidestr_escrow_secret:${chainId}:${String(id).toLowerCase()}`;
+$('chainid').textContent = chainId;
+const fmtLeft = (s) => s <= 0 ? 'passed' : `${Math.floor(s / 3600)} h ${Math.floor((s % 3600) / 60)} m ${Math.floor(s % 60)} s`;
+$('code').innerHTML = `<span class="c">// SPDX-License-Identifier: AGPL-3.0-or-later</span>
+<span class="k">pragma</span> solidity ^0.8.20;
+<span class="k">contract</span> Escrow {
+    <span class="k">struct</span> Lock { <span class="k">address</span> payer; <span class="k">uint64</span> deadline; <span class="k">address</span> payee; <span class="k">uint256</span> amount; <span class="k">bytes32</span> hash; }
+    <span class="k">mapping</span>(<span class="k">bytes32</span> =&gt; Lock) <span class="k">public</span> locks;
+    <span class="k">event</span> Locked(<span class="k">bytes32</span> <span class="k">indexed</span> id, <span class="k">address</span> <span class="k">indexed</span> payer, <span class="k">address</span> <span class="k">indexed</span> payee, <span class="k">uint256</span> amount, <span class="k">uint64</span> deadline, <span class="k">bytes32</span> hash);
+    <span class="k">event</span> Claimed(<span class="k">bytes32</span> <span class="k">indexed</span> id, <span class="k">bytes32</span> preimage);
+    <span class="k">event</span> Refunded(<span class="k">bytes32</span> <span class="k">indexed</span> id);
+    <span class="k">function</span> idOf(<span class="k">address</span> payer, <span class="k">address</span> payee, <span class="k">bytes32</span> h, <span class="k">uint64</span> deadline) <span class="k">public pure returns</span> (<span class="k">bytes32</span>) {
+        <span class="k">return</span> <span class="k">keccak256</span>(abi.encode(payer, payee, h, deadline));
+    }
+    <span class="k">function</span> lock(<span class="k">address</span> payee, <span class="k">bytes32</span> h, <span class="k">uint64</span> deadline) <span class="k">external payable returns</span> (<span class="k">bytes32</span> id) {
+        <span class="k">require</span>(msg.value &gt; <span class="n">0</span>, <span class="s">"empty"</span>);
+        <span class="k">require</span>(payee != <span class="k">address</span>(<span class="n">0</span>), <span class="s">"nobody"</span>);
+        <span class="k">require</span>(deadline &gt; block.timestamp, <span class="s">"past"</span>);
+        id = idOf(msg.sender, payee, h, deadline);
+        <span class="k">require</span>(locks[id].payer == <span class="k">address</span>(<span class="n">0</span>), <span class="s">"taken"</span>);
+        locks[id] = Lock(msg.sender, deadline, payee, msg.value, h);
+        <span class="k">emit</span> Locked(id, msg.sender, payee, msg.value, deadline, h);
+    }
+    <span class="k">function</span> claim(<span class="k">bytes32</span> id, <span class="k">bytes32</span> preimage) <span class="k">external</span> {
+        Lock <span class="k">memory</span> l = locks[id];
+        <span class="k">require</span>(l.payer != <span class="k">address</span>(<span class="n">0</span>), <span class="s">"gone"</span>);
+        <span class="k">require</span>(block.timestamp &lt; l.deadline, <span class="s">"late"</span>);
+        <span class="k">require</span>(<span class="k">sha256</span>(abi.encodePacked(preimage)) == l.hash, <span class="s">"hash"</span>);
+        <span class="k">delete</span> locks[id];
+        <span class="k">emit</span> Claimed(id, preimage);
+        (<span class="k">bool</span> paid, ) = l.payee.call{value: l.amount}(<span class="s">""</span>); <span class="k">require</span>(paid, <span class="s">"payee"</span>);
+    }
+    <span class="k">function</span> refund(<span class="k">bytes32</span> id) <span class="k">external</span> {
+        Lock <span class="k">memory</span> l = locks[id];
+        <span class="k">require</span>(l.payer != <span class="k">address</span>(<span class="n">0</span>), <span class="s">"gone"</span>);
+        <span class="k">require</span>(block.timestamp &gt;= l.deadline, <span class="s">"early"</span>);
+        <span class="k">delete</span> locks[id];
+        <span class="k">emit</span> Refunded(id);
+        (<span class="k">bool</span> paid, ) = l.payer.call{value: l.amount}(<span class="s">""</span>); <span class="k">require</span>(paid, <span class="s">"payer"</span>);
+    }
+}`;
+let w, key = null, eth = null, lock = null, events = [], tick = null, lastMsg = '', pendingSecret = null;
+try { const { openWallet } = await import(WALLET); w = await openWallet({ chain: chainId, onProgress: (s) => { $('src').textContent = s; } }); } catch (e) { $('src').innerHTML = `<span class="bad">could not open the chain: ${esc(e.message)}</span>`; throw e; }
+if (!escrow) { $('src').innerHTML = `<span class="bad">no escrow contract is known for ${esc(chainId)}; pass one with ?escrow=</span>`; throw new Error('no escrow address'); }
+$('addr').textContent = escrow; $('addr2').textContent = escrow;
+// the key before the first read: stateOf needs to know whose page this is, or it answers "observer" to everyone
+function loadKey() { key = LS.get(`sidestr_key:${chainId}`); try { eth = key ? w.ethAddress(key) : null; } catch { key = null; eth = null; } }
+loadKey();
+E.sha256Live(w).then((ok) => { $('shaok').innerHTML = ok ? ' <span class="good">— it does</span>' : ' <span class="bad">— and it does not answer; do not trust this chain</span>'; }).catch(() => {});
+async function refresh() {
+  const id = lockParam ? String(lockParam).toLowerCase() : null;
+  const [lk, ev, bal] = await Promise.all([
+    id ? E.readLock(w, escrow, id).catch(() => null) : Promise.resolve(null),
+    E.history(w, escrow, {}).catch(() => []),
+    w.evmBalance(escrow).catch(() => 0n)]);
+  lock = lk; events = ev;
+  const settled = id ? E.settlementOf(ev, id) : null;
+  const now = Math.floor(Date.now() / 1000);
+  const st = E.stateOf(lock, { now, me: eth, settled });
+  render(st, bal); activity();
+  return st;
+}
+function render(st, bal) {
+  const now = Math.floor(Date.now() / 1000);
+  const stats = [];
+  if (lock) {
+    stats.push(['amount', `${n(lock.sats)}`, 'sats'], ['payer', short(lock.payer), ''], ['payee', short(lock.payee), ''], ['deadline', new Date(lock.deadline * 1000).toLocaleString(), ''], ['time left', `<span id="cd">${fmtLeft(lock.deadline - now)}</span>`, ''], ['hash', lock.hash.slice(0, 10) + '…', '']);
+  } else {
+    if (lockParam) stats.push(['lock id', String(lockParam).slice(0, 10) + '…', '']);
+  }
+  stats.push(['contract holds', n(bal / E.GWEI), 'sats']);
+  $('stats').innerHTML = stats.filter((s, i) => stats.findIndex((x) => x[0] === s[0]) === i).map(([k, v, u]) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}<small>${u}</small></div></div>`).join('');
+  $('statepill').textContent = st.state + (st.role !== 'observer' ? ` · you are the ${st.role}` : '');
+  $('src').innerHTML = `read from the page's own copy of the chain at block ${w.tip.height}, validated here · <a href="https://sidestr.com/wallet/?chain=${encodeURIComponent(chainId)}">wallet</a>`;
+  $('why').textContent = st.why;
+  $('clock').textContent = lock ? 'the deadline is checked against block.timestamp, which the producer sets — on a single-signer chain, the deadline is that signer\u2019s word for what time it is.' : '';
+  clearInterval(tick);
+  if (lock && lock.deadline - now > 0) tick = setInterval(() => { const el = $('cd'); const s = lock.deadline - Math.floor(Date.now() / 1000); if (el) el.textContent = fmtLeft(s); if (s <= 0 || (st.state === 'open' && s <= E.MARGIN)) { clearInterval(tick); refresh().catch(() => {}); } }, 1000);
+  renderYou(st);
+}
+const short = (a) => a ? a.slice(0, 8) + '…' + a.slice(-4) : '—';
+async function renderYou(st) {
+  const el = $('you'); loadKey();
+  if (!key) { el.innerHTML = `<p>This page shares the wallet's key for this chain, and there is none in this browser yet.</p><div class="row"><button class="ac" id="mk">make a key</button><span class="mut small">or make one in the <a href="https://sidestr.com/wallet/?chain=${encodeURIComponent(chainId)}">wallet</a></span></div>`; $('mk').onclick = () => { LS.set(`sidestr_key:${chainId}`, w.newKey()); loadKey(); bootYou(); }; return; }
+  if (!st.action) {
+    if (st.state === 'open' && st.role === 'payer') return payerHolds(el);
+    el.innerHTML = `<div class="row"><span class="mut">you</span><span class="mono">${esc(eth)}</span></div><p class="small mut" style="margin:.4rem 0 0">${st.state === 'closing' ? esc(st.why) : 'there is nothing for this key to do here'}</p>${lastMsg}`;
+    return;
+  }
+  if (st.action.kind === 'lock') return lockForm(el);
+  if (st.action.kind === 'claim') return claimForm(el, st);
+  if (st.action.kind === 'refund') return refundBtn(el, st);
+  el.innerHTML = '';
+}
+function payerHolds(el) {
+  const secret = LS.get(secKey(lock.id));
+  el.innerHTML = `<div class="row"><span class="mut">you</span><span class="mono">${esc(eth)}</span><span class="pill">payer</span></div>
+  <div class="row"><span class="mut small">the link for the payee</span></div><div class="mono small" id="plink">…</div><div class="row"><button id="copylink">copy the link</button><span class="mut small" id="linkout"></span></div>
+  ${secret ? `<p>the secret that releases these sats is stored in this browser — keep it until the payee has delivered, then hand it over. Losing it means waiting for the refund. It is not in the link and never reaches the chain until the claim.</p>
+    <div class="row"><span class="mono mut" id="sechash">the lock's hash: ${esc(lock.hash.slice(0, 18))}…</span></div>
+    <div class="row"><button id="show">show the secret</button><button id="copysec">copy it</button><span class="mut small" id="secout"></span></div>`
+  : `<div class="note">no secret for this lock is stored in this browser. If this browser made the lock, it kept the secret here; otherwise the payer holds it and will send it when you have delivered.</div>`}
+  ${lastMsg}`;
+  const linkToPayee = `${location.origin + location.pathname}?chain=${encodeURIComponent(chainId)}&lock=${lock.id}`;
+  $('plink').textContent = linkToPayee;
+  $('copylink').onclick = async () => { try { await navigator.clipboard.writeText(linkToPayee); $('linkout').textContent = 'copied'; } catch { $('linkout').textContent = 'copy failed — select it above'; } };
+  if ($('show')) $('show').onclick = () => { $('sechash').textContent = 'secret: ' + esc(secret); $('sechash').classList.remove('mut'); $('show').disabled = true; };
+  if ($('copysec')) $('copysec').onclick = async () => { try { await navigator.clipboard.writeText(secret); $('secout').textContent = 'copied'; } catch { $('secout').textContent = 'copy failed — select it above'; } };
+}
+async function gasNote(el, kind, sats = 0n) {
+  const need = E.needs(kind, sats); const have = await w.evmBalance(eth);
+  if (have >= need) return true;
+  el.insertAdjacentHTML('beforeend', `<div class="note">This needs ${n(need)} gwei in the EVM and you hold ${n(have)} — the likeliest way a first run fails, and nothing to do with the contract. <button id="dep">deposit 200,000 sats into the EVM</button> or ask the <a href="https://play-grounds.github.io/sidestr/faucet/?chain=${encodeURIComponent(chainId)}">faucet contract</a>. <span id="depout" class="mut small"></span></div>`);
+  $('dep').onclick = () => go(() => Promise.resolve(w.build({ key, to: eth, amount: 200000, evmDeposit: true })), 'deposit');
+  return false;
+}
+function lockForm(el) {
+  pendingSecret = pendingSecret ?? E.newSecret();
+  const link = location.origin + location.pathname;
+  el.innerHTML = `<div class="row"><span class="mut">you</span><span class="mono">${esc(eth)}</span><span class="pill">payer</span></div>
+  <p class="small" style="margin:.2rem 0">${esc(E.stateOf(null, { me: eth }).why)}. The contract guarantees you cannot take the money back early and cannot send it anywhere but the payee; what it does not do is force you to reveal the secret — if you never hand it over, you simply get the refund at the deadline.</p>
+  <label>payee — the 0x address that can claim</label><input class="mono" id="f-payee" placeholder="0x…" spellcheck="false">
+  <label>amount — sats, which the contract holds as gwei (1 sat = 1 gwei)</label><input class="mono" id="f-sats" placeholder="10000" inputmode="numeric">
+  <label>term — minutes until the payee can no longer claim (at least ${E.MIN_TERM / 60})</label><input class="mono" id="f-term" value="${E.MIN_TERM / 60}" inputmode="numeric">
+  <div class="row" style="margin-top:.8rem"><button id="f-secret">new secret</button><span class="mono mut small" id="f-hash">hash: …</span></div>
+  <div class="row"><button class="ac" id="f-go">lock it</button><span class="mut small" id="f-id"></span></div><div id="out"></div>${lastMsg}`;
+  const showHash = async () => { $('f-hash').textContent = 'hash: ' + (await E.hashOf(pendingSecret)); };
+  $('f-secret').onclick = () => { pendingSecret = E.newSecret(); showHash(); };
+  showHash();
+  $('f-go').onclick = async () => {
+    const out = $('out');
+    try {
+      const payee = $('f-payee').value.trim(), sats = BigInt($('f-sats').value || '0'), mins = Number($('f-term').value || '0');
+      if (!(await gasNote(out, 'lock', sats))) return;
+      const deadline = Math.floor(Date.now() / 1000) + mins * 60;
+      const hash = await E.hashOf(pendingSecret);
+      const b = await E.buildLock(w, { key, escrow, payee, hash, deadline, sats });
+      LS.set(secKey(b.id), pendingSecret);
+      // from here this page is that lock's page: the id goes in the URL so a reload, and the payer's
+      // view after it is mined, both find it — and so the link to the payee survives the re-render
+      lockParam = b.id; history.replaceState(null, '', `${link}?chain=${encodeURIComponent(chainId)}&lock=${b.id}`);
+      out.insertAdjacentHTML('beforeend', `<div class="ok">the lock's id is <span class="mono">${b.id.slice(0, 18)}…</span> — this page has stored the secret for it, and is now showing that lock.</div>`);
+      pendingSecret = null;
+      await go(() => Promise.resolve(b), 'lock');
+    } catch (e) { out.insertAdjacentHTML('beforeend', `<div class="err">${esc(e.message)}</div>`); }
+  };
+}
+async function claimForm(el, st) {
+  el.innerHTML = `<div class="row"><span class="mut">you</span><span class="mono">${esc(eth)}</span><span class="pill">payee</span></div>
+  <p class="small" style="margin:.2rem 0">${esc(st.why)}</p>
+  <label>the secret the payer sends you — 32 bytes of hex</label><input class="mono" id="c-sec" placeholder="0x…" spellcheck="false" autocomplete="off">
+  <div class="row" style="margin-top:.8rem"><button class="ac" id="c-go" disabled>${esc(st.action.label)}</button><span class="mut small" id="c-out2"></span></div><div id="out"></div>${lastMsg}`;
+  $('c-sec').oninput = async () => { const ok = await E.opens($('c-sec').value.trim(), lock); $('c-go').disabled = !ok; $('c-out2').textContent = ok ? 'this opens the lock' : ($('c-sec').value.trim() ? 'not the secret for this hash' : ''); };
+  $('c-go').onclick = async () => {
+    const out = $('out');
+    try {
+      if (!(await gasNote(out, 'claim'))) return;
+      const secret = $('c-sec').value.trim();
+      const ok = await E.opens(secret, lock); if (!ok) throw new Error('that secret does not match this lock\u2019s hash, so the chain would refuse it; nothing has been sent');
+      const b = await E.buildClaim(w, { key, escrow, lock, secret });
+      await go(() => Promise.resolve(b), 'claim');
+    } catch (e) { out.insertAdjacentHTML('beforeend', `<div class="err">${esc(e.message)}</div>`); }
+  };
+}
+async function refundBtn(el, st) {
+  el.innerHTML = `<div class="row"><span class="mut">you</span><span class="mono">${esc(eth)}</span><span class="pill">payer</span></div>
+  <p class="small" style="margin:.2rem 0">the deadline has passed and the payee never claimed — or you never handed over the secret. Take it back.</p>
+  <div class="row"><button class="ac" id="r-go">${esc(st.action.label)}</button></div><div id="out"></div>${lastMsg}`;
+  $('r-go').onclick = async () => {
+    const out = $('out');
+    try {
+      if (!(await gasNote(out, 'refund'))) return;
+      const b = await E.buildRefund(w, { key, escrow, lock });
+      await go(() => Promise.resolve(b), 'refund');
+    } catch (e) { out.insertAdjacentHTML('beforeend', `<div class="err">${esc(e.message)}</div>`); }
+  };
+}
+async function go(builder, what) {
+  const out = $('out') ?? $('you'); out.insertAdjacentHTML('beforeend', '<div class="mut small">signing and dry-running…</div>'); let b;
+  try { b = await builder(); } catch (e) { out.insertAdjacentHTML('beforeend', `<div class="err">${esc(e.message)}</div>`); return; }
+  out.insertAdjacentHTML('beforeend', `<div class="note">${esc(b.note ?? what)}${b.gasUsed ? ` · the dry run used ${n(b.gasUsed)} gas` : ''} · fee ${b.fee} sats · publishing to the relays…</div>`);
+  const waiting = out.lastElementChild;
+  try { const r = await w.publish(b.hex); if (!r.accepted) throw new Error('no relay accepted the event');
+    for (let i = 0; i < 60; i++) { await new Promise((x) => setTimeout(x, 5000)); const m = await w.mined(b.txid); if (m) {
+      const rc = b.ethHash ? w.evmReceipt(b.ethHash) : null;
+      lastMsg = `<div class="ok">${rc ? (rc.status === 1 ? `${esc(what)} settled in block ${m.height}, ${n(rc.gasUsed)} gas paid` : `mined in block ${m.height} but the call reverted`) : `mined in block ${m.height}`} — re-reading the lock from the chain…</div>`;
+      lock = lockParam ? await E.readLock(w, escrow, String(lockParam).toLowerCase()).catch(() => null) : null;
+      const st = await refresh(); renderYou(st); return; }
+      if (waiting) waiting.textContent = `waiting for the block… ${(i + 1) * 5} s`; }
+    out.insertAdjacentHTML('beforeend', '<div class="warn small">not mined after 5 minutes; refresh later</div>');
+  } catch (e) { out.insertAdjacentHTML('beforeend', `<div class="err">${esc(e.message)}</div>`); }
+}
+async function activity() {
+  const el = $('activity');
+  const rows = events.slice(0, 20).map((e) => {
+    const mine = eth && (e.payer?.toLowerCase() === eth.toLowerCase() || e.payee?.toLowerCase() === eth.toLowerCase() || e.from?.toLowerCase() === eth.toLowerCase());
+    const what = e.kind === 'locked' ? `locked ${n(e.sats)} sats, ${short(e.payer)} → ${short(e.payee)}` : e.kind === 'claimed' ? `claimed · preimage ${e.preimage.slice(0, 12)}…` : 'refunded';
+    return `<tr><td class="mono">${e.height}</td><td>${what}</td><td class="mono">${e.id.slice(0, 10)}…${lockParam && String(e.id).toLowerCase() === String(lockParam).toLowerCase() ? ' <span class="good">(this lock)</span>' : ''}</td><td class="r mono">${n(e.gasUsed)}</td>${mine ? '<td class="good">you</td>' : '<td></td>'}</tr>`;
+  }).join('');
+  el.innerHTML = events.length ? `<table><tr><th>block</th><th>what</th><th>lock</th><th class="r">gas</th><th></th></tr>${rows}</table>` : '<span class="mut">nothing yet — the locks this contract holds will appear here</span>';
+}
+async function bootYou() { await refresh(); }
+await refresh();
+</script>
+</body>
+</html>
