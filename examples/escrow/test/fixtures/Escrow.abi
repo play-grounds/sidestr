@@ -1,0 +1,210 @@
+[
+ {
+  "anonymous": false,
+  "inputs": [
+   {
+    "indexed": true,
+    "internalType": "bytes32",
+    "name": "id",
+    "type": "bytes32"
+   },
+   {
+    "indexed": false,
+    "internalType": "bytes32",
+    "name": "preimage",
+    "type": "bytes32"
+   }
+  ],
+  "name": "Claimed",
+  "type": "event"
+ },
+ {
+  "anonymous": false,
+  "inputs": [
+   {
+    "indexed": true,
+    "internalType": "bytes32",
+    "name": "id",
+    "type": "bytes32"
+   },
+   {
+    "indexed": true,
+    "internalType": "address",
+    "name": "payer",
+    "type": "address"
+   },
+   {
+    "indexed": true,
+    "internalType": "address",
+    "name": "payee",
+    "type": "address"
+   },
+   {
+    "indexed": false,
+    "internalType": "uint256",
+    "name": "amount",
+    "type": "uint256"
+   },
+   {
+    "indexed": false,
+    "internalType": "uint64",
+    "name": "deadline",
+    "type": "uint64"
+   },
+   {
+    "indexed": false,
+    "internalType": "bytes32",
+    "name": "hash",
+    "type": "bytes32"
+   }
+  ],
+  "name": "Locked",
+  "type": "event"
+ },
+ {
+  "anonymous": false,
+  "inputs": [
+   {
+    "indexed": true,
+    "internalType": "bytes32",
+    "name": "id",
+    "type": "bytes32"
+   }
+  ],
+  "name": "Refunded",
+  "type": "event"
+ },
+ {
+  "inputs": [
+   {
+    "internalType": "bytes32",
+    "name": "id",
+    "type": "bytes32"
+   },
+   {
+    "internalType": "bytes32",
+    "name": "preimage",
+    "type": "bytes32"
+   }
+  ],
+  "name": "claim",
+  "outputs": [],
+  "stateMutability": "nonpayable",
+  "type": "function"
+ },
+ {
+  "inputs": [
+   {
+    "internalType": "address",
+    "name": "payer",
+    "type": "address"
+   },
+   {
+    "internalType": "address",
+    "name": "payee",
+    "type": "address"
+   },
+   {
+    "internalType": "bytes32",
+    "name": "h",
+    "type": "bytes32"
+   },
+   {
+    "internalType": "uint64",
+    "name": "deadline",
+    "type": "uint64"
+   }
+  ],
+  "name": "idOf",
+  "outputs": [
+   {
+    "internalType": "bytes32",
+    "name": "",
+    "type": "bytes32"
+   }
+  ],
+  "stateMutability": "pure",
+  "type": "function"
+ },
+ {
+  "inputs": [
+   {
+    "internalType": "address",
+    "name": "payee",
+    "type": "address"
+   },
+   {
+    "internalType": "bytes32",
+    "name": "h",
+    "type": "bytes32"
+   },
+   {
+    "internalType": "uint64",
+    "name": "deadline",
+    "type": "uint64"
+   }
+  ],
+  "name": "lock",
+  "outputs": [
+   {
+    "internalType": "bytes32",
+    "name": "id",
+    "type": "bytes32"
+   }
+  ],
+  "stateMutability": "payable",
+  "type": "function"
+ },
+ {
+  "inputs": [
+   {
+    "internalType": "bytes32",
+    "name": "",
+    "type": "bytes32"
+   }
+  ],
+  "name": "locks",
+  "outputs": [
+   {
+    "internalType": "address",
+    "name": "payer",
+    "type": "address"
+   },
+   {
+    "internalType": "uint64",
+    "name": "deadline",
+    "type": "uint64"
+   },
+   {
+    "internalType": "address",
+    "name": "payee",
+    "type": "address"
+   },
+   {
+    "internalType": "uint256",
+    "name": "amount",
+    "type": "uint256"
+   },
+   {
+    "internalType": "bytes32",
+    "name": "hash",
+    "type": "bytes32"
+   }
+  ],
+  "stateMutability": "view",
+  "type": "function"
+ },
+ {
+  "inputs": [
+   {
+    "internalType": "bytes32",
+    "name": "id",
+    "type": "bytes32"
+   }
+  ],
+  "name": "refund",
+  "outputs": [],
+  "stateMutability": "nonpayable",
+  "type": "function"
+ }
+]
