@@ -46,3 +46,18 @@ https://play-grounds.github.io/sidestr/faucet/ — the first contract on `sidest
 read from the page's own validated copy of the chain, and a button that asks it for a drip with the
 wallet's key. A baby-steps page for smart contracts: units (1 gwei = 1 sat), storage, events, require,
 ordering, gas versus drip.
+
+## examples/
+
+Self-contained briefs for working examples in `examples/BRIEFS.md`: one page, one deliverable, one
+test each, and a list of what the example found wrong in the libraries.
+
+`examples/escrow/` is the first of them, the first exchange between two keys that need not trust each
+other. `Escrow.sol` is a 34-line sha256-and-deadline lock on `sidestr:txbt4-evm`: the payer locks
+sats naming a payee and a deadline, the payee takes them by showing the preimage the payer chose,
+and after the deadline only the payer can take them back. No arbiter. `escrow.mjs` is the logic with
+no DOM — secrets, the lock's id, the state machine that says which single action a key may take
+next, and the three transactions, each dry-run on the page's own state so a refusal is a sentence
+before anything is signed. `node examples/escrow/test/escrow-test.mjs` runs the whole thing against a
+throwaway evm chain (39 checks: claim, the wrong preimage, the deadline race, the refund).
+`examples/escrow/DESIGN.md` is the design and the brief for the page, which is next.
