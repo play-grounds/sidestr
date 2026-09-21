@@ -8,6 +8,8 @@
 // holds, and the wallet's `value` is gwei, which is the same number as sats.
 import { encodeMany, decodeMany } from '../../ide/abi.mjs';
 
+// deployed on sidestr:txbt4-evm in block 520, from test/fixtures/Escrow.bin; ?escrow= overrides it
+export const ESCROW = { 'sidestr:txbt4-evm': '0x42c6f8bd9c1f44ce52e509b16139023a5d2998d5' };
 export const GWEI = 1000000000n;
 export const SIG = { lock: 'lock(address,bytes32,uint64)', claim: 'claim(bytes32,bytes32)', refund: 'refund(bytes32)', locks: 'locks(bytes32)', idOf: 'idOf(address,address,bytes32,uint64)' };
 export const EVENT = { Locked: 'Locked(bytes32,address,address,uint256,uint64,bytes32)', Claimed: 'Claimed(bytes32,bytes32)', Refunded: 'Refunded(bytes32)' };

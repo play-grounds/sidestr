@@ -53,7 +53,8 @@ Self-contained briefs for working examples in `examples/BRIEFS.md`: one page, on
 test each, and a list of what the example found wrong in the libraries.
 
 `examples/escrow/` is the first of them, the first exchange between two keys that need not trust each
-other. `Escrow.sol` is a 34-line sha256-and-deadline lock on `sidestr:txbt4-evm`: the payer locks
+other. `Escrow.sol` is a 34-line sha256-and-deadline lock, live on `sidestr:txbt4-evm` at
+`0x42c6f8bd9c1f44ce52e509b16139023a5d2998d5` since block 520: the payer locks
 sats naming a payee and a deadline, the payee takes them by showing the preimage the payer chose,
 and after the deadline only the payer can take them back. No arbiter. `escrow.mjs` is the logic with
 no DOM — secrets, the lock's id, the state machine that says which single action a key may take

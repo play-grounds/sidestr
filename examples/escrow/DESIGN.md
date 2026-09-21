@@ -24,16 +24,17 @@ buy from each other, in its smallest honest form.
 
 | file | what it is | state |
 | --- | --- | --- |
-| `Escrow.sol` | the contract, 34 lines | compiled, tested, **not yet deployed** to `txbt4-evm` |
+| `Escrow.sol` | the contract, 34 lines | live at `0x42c6f8bd9c1f44ce52e509b16139023a5d2998d5` on `sidestr:txbt4-evm`, block 520 |
 | `escrow.mjs` | all the logic, no DOM | done; §4 is its API |
 | `test/escrow-test.mjs` | end to end on a throwaway chain | 39 checks, all passing |
 | `test/compile.mjs` | Escrow.sol → `test/fixtures/` | solc 0.8.28, optimiser 200, cancun |
 | `index.html` | **the page** | to build |
 | `og.svg` · `og.png` | 1200×630, rendered with headless Chromium | to build |
 
-Measured on a throwaway chain (1 gas = 1 gwei = 1 sat): deploy 580,854 · lock 114,767 · claim
-41,622 · refund 40,482. Creation code is 2,468 bytes. The sha256 precompile is live on the chain's
-VM, which was the design's one assumption — checked at the top of the test.
+Measured on a throwaway chain, and the deployment on the live one (1 gas = 1 gwei = 1 sat): deploy
+580,854 · lock 114,767 · claim 41,622 · refund 40,482. Creation code is 2,468 bytes, runtime 2,440.
+The sha256 precompile is live on both — the design's one assumption, checked at the top of the test
+and again against the deployed contract.
 
 ## 3. The contract, and the five decisions worth explaining
 
@@ -121,8 +122,8 @@ assume the new state.
 ## 5. The screen
 
 One page, one lock at a time: `?chain=<chain id>&lock=<0x…>`, defaulting to `sidestr:txbt4-evm`. No
-lock in the URL means the make-a-lock view. `?escrow=` overrides the contract address for anyone
-testing their own deployment.
+lock in the URL means the make-a-lock view. The contract is `E.ESCROW[chainId]`; `?escrow=`
+overrides it for anyone testing their own deployment.
 
 The whole interface is the state table. One primary action at a time, chosen by the lock's state and
 by whose key is in this browser — never two buttons, never a disabled button with no explanation:
