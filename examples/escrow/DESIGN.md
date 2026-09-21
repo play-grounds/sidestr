@@ -222,18 +222,23 @@ key's role from the chain's records, and the history built from the contract's l
 Then report, as the brief asks: the commit, the live URL, the test output, the gas of each call, and
 the issues filed:
 
-0. **`buildEvm` can hand back a transaction that cannot succeed, and says nothing** — §7. Two asks:
-   have `buildEvm` return the dry run's execution status and refuse (or at least report) a build that
-   reverts or runs out of gas, and have `checkTx` stop discarding the receipt it just made. This one
-   cost real sats twice before it was understood, and every page on this wallet is exposed to it.
+0. **`buildEvm` can hand back a transaction that cannot succeed, and says nothing** — §7. It cost
+   real sats twice before it was understood, and the faucet page and the ide are exposed to it too.
+   Filed as [wallet#2](https://github.com/sidestr/wallet/issues/2), with
+   [spec#3](https://github.com/sidestr/spec/issues/3) for the half of the fix that belongs in
+   `checkTx`: stop discarding the execution status it just computed.
 
 1. **`ide/abi.mjs` is not in the wallet.** `w.abi.encode` handles only words and its `selector` knows
    only the ERC-20 constants, so anything with a `bytes32` or `uint64` argument needs the
-   playground's coder. Import it, do not copy it, and file that it belongs in `wallet.mjs`.
+   playground's coder. This page imports it across two directories rather than copy it.
+   [wallet#3](https://github.com/sidestr/wallet/issues/3)
 2. **No log decoding.** Receipts carry raw `[address, topics, data]`; `E.history` hand-rolls it.
-   Wants a `wallet.logs(address, signature)`.
+   Wants a `wallet.logs(address, signature)`. [wallet#4](https://github.com/sidestr/wallet/issues/4)
 3. **`w.keccak(hex)` hashes the ASCII of the string** — it takes bytes only as a `Uint8Array`
-   (`wallet.mjs:163`). A quiet footgun for exactly this kind of code.
+   (`wallet.mjs:163`). A quiet footgun for exactly this kind of code, filed together with the missing
+   `sha256` helper as [wallet#5](https://github.com/sidestr/wallet/issues/5).
 4. **`evmActivity` matches any topic whose last 20 bytes equal the address** (`wallet.mjs:158`), so a
    `bytes32` lock id can false-positive as one of your transactions.
-5. **No sha256 helper** in the wallet, though the precompile is there and this design leans on it.
+   [wallet#6](https://github.com/sidestr/wallet/issues/6)
+5. **No sha256 helper** in the wallet, though the precompile is there and this design leans on it —
+   folded into [wallet#5](https://github.com/sidestr/wallet/issues/5).
