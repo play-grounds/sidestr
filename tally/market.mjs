@@ -4,7 +4,7 @@
 // Every dependency is pinned by full commit; chains are named by id, never by host.
 export const DEFAULTS = {
   cdn: 'https://cdn.jsdelivr.net/gh/bitcoin-desktop/schema@v0.0.27',
-  lib: 'https://cdn.jsdelivr.net/gh/sidestr/spec@04b691b7ba3135354776f2c15125c53de5ea4452/siding/lib',
+  lib: 'https://cdn.jsdelivr.net/gh/sidestr/spec@e457737ac3e0f674273978b653268aad45d1f73e/siding/lib',
   explorer: 'https://cdn.jsdelivr.net/gh/sidestr/explorer@799a74bf67f1578531428ef8ffb9668e1170245b/explorer.mjs',
   wallet: 'https://cdn.jsdelivr.net/gh/sidestr/wallet@04616f0d47ad20b7cc820b1bde196bdbd0a3bb59/wallet.mjs',
   relays: ['wss://nos.lol', 'wss://relay.damus.io', 'wss://relay.primal.net', 'wss://nostr.mom', 'wss://nostr.oxtr.dev'],

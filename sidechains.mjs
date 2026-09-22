@@ -6,7 +6,7 @@
 export const DEFAULT_RELAYS = ['wss://nos.lol', 'wss://relay.damus.io', 'wss://relay.primal.net', 'wss://nostr.mom', 'wss://nostr.oxtr.dev'];
 export const TIP_KIND = 33333;
 export const CDN = 'https://cdn.jsdelivr.net/gh/bitcoin-desktop/schema@v0.0.27';
-export const LIB = 'https://cdn.jsdelivr.net/gh/sidestr/spec@a964d6b088325f8240e72cac2686c80ddce92563/siding/lib';
+export const LIB = 'https://cdn.jsdelivr.net/gh/sidestr/spec@e457737ac3e0f674273978b653268aad45d1f73e/siding/lib';
 
 // every sidestr announcement the relays hold, deduplicated by event id
 export function fetchTips({ relays = DEFAULT_RELAYS, timeout = 6000, onRelay = () => {} } = {}) {
