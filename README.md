@@ -62,3 +62,13 @@ next, and the three transactions, each dry-run on the page's own state so a refu
 before anything is signed. `node examples/escrow/test/escrow-test.mjs` runs the whole thing against a
 throwaway evm chain (39 checks: claim, the wrong preimage, the deadline race, the refund).
 `examples/escrow/DESIGN.md` is the design and the brief for the page, which is next.
+
+`examples/paywall/` is the second: pay-per-request with no human on either side. `server.mjs` answers
+one question, the tip of the chain it watches, only after a payment it has checked on its own
+validated copy: mined, to its address, for the price, carrying the invoice's nonce in an OP_RETURN so
+one payment buys one answer. `client.mjs`, built on the package's agent example, asks, checks the
+invoice, pays, waits for the block and asks again. It is a project that is not ours — `npm install
+sidestr` in its own `package.json` — and `npm test` spawns even its producer from there (25 checks:
+the answer, reuse, the wrong amount, the missing nonce, the race). Its README carries the six things
+the package lacked, the sharpest being that a signed transaction changed in place and signed again
+verifies locally and is refused by every validator.

@@ -1,0 +1,15 @@
+{
+  "name": "sidestr-paywall-example",
+  "private": true,
+  "type": "module",
+  "description": "pay-per-request: a server answers only after a payment it has checked on its own validated copy of a sidestr chain, and a client agent that pays it",
+  "license": "AGPL-3.0-or-later",
+  "scripts": {
+    "server": "node server.mjs",
+    "client": "node client.mjs",
+    "test": "node test/paywall-test.mjs"
+  },
+  "dependencies": {
+    "sidestr": "0.0.5"
+  }
+}
