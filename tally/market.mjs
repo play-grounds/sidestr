@@ -4,9 +4,9 @@
 // Every dependency is pinned by full commit; chains are named by id, never by host.
 export const DEFAULTS = {
   cdn: 'https://cdn.jsdelivr.net/gh/bitcoin-desktop/schema@v0.0.27',
-  lib: 'https://cdn.jsdelivr.net/gh/sidestr/spec@e6e04d7d023f99888d37b402dd2ffc7042f9d2ce/siding/lib',
+  lib: 'https://cdn.jsdelivr.net/gh/sidestr/spec@fa1a8725e4f8027c7aa2c0a2ee82068aebf76f08/siding/lib',
   explorer: 'https://cdn.jsdelivr.net/gh/sidestr/explorer@799a74bf67f1578531428ef8ffb9668e1170245b/explorer.mjs',
-  wallet: 'https://cdn.jsdelivr.net/gh/sidestr/wallet@04616f0d47ad20b7cc820b1bde196bdbd0a3bb59/wallet.mjs',
+  wallet: 'https://cdn.jsdelivr.net/gh/sidestr/wallet@d480c3fcc10fc8e6d537113b8227cd01576f37e2/wallet.mjs',
   relays: ['wss://nos.lol', 'wss://relay.damus.io', 'wss://relay.primal.net', 'wss://nostr.mom', 'wss://nostr.oxtr.dev'],
 };
 const B = (n) => BigInt(n), N = (b) => Number(b);
@@ -39,6 +39,20 @@ export class Market {
   assetCoins(script, asset) { return this.w.coins(script).map((c) => ({ ...c, carried: this.rules.assets.of(c.txid, c.vout) })).filter((c) => c.carried?.has(asset) && c.mature); }
   pools() { return [...this.rules.pool.pools.entries()].map(([id, p]) => { const a = this.rules.assets.issued.get(p.asset); return { id, asset: p.asset, ticker: a?.ticker ?? p.asset.slice(0, 6), decimals: a?.decimals ?? 0, x: p.x, y: p.y, shares: p.shares, outpoint: p.outpoint, price: p.x / p.y }; }); }
   pool(id) { return this.pools().find((p) => p.id === id) ?? null; }
+  // a pool's history from the rule's journal: one event per block that changed it — { height, time, kind, x, y, x2, y2, dx, dy, price, volume }
+  // price is sats per whole unit of the asset (10^decimals base units); volume is sats that moved; a swap's side is what the trader sold
+  history(id) {
+    const j = this.rules.pool.journal; if (!j) return []; const p = this.pool(id); if (!p) return []; const unit = 10 ** p.decimals;
+    const heights = [...j.keys()].filter((h) => (j.get(h) ?? []).some((e) => e.id === id)).sort((a, b) => a - b); const out = [];
+    for (let i = 0; i < heights.length; i++) { const h = heights[i]; const before = j.get(h).find((e) => e.id === id).before; const next = heights[i + 1]; const after = next != null ? j.get(next).find((e) => e.id === id).before : this.rules.pool.pools.get(id);
+      if (!after) continue; const x = before?.x ?? 0, y = before?.y ?? 0, x2 = after.x, y2 = after.y; const dx = x2 - x, dy = y2 - y;
+      const kind = !before ? 'open' : after.shares === before.shares ? 'swap' : after.shares > before.shares ? 'add' : 'remove';
+      const price = kind === 'swap' && dy !== 0 ? Math.abs(dx / dy) * unit : x2 / y2 * unit;
+      out.push({ height: h, time: this.ex.blocks[h]?.time ?? null, kind, side: kind === 'swap' ? (dx > 0 ? 'buy' : 'sell') : null, x, y, x2, y2, dx, dy, price, volume: Math.abs(dx), mid: x2 / y2 * unit }); }
+    return out;
+  }
+  // the pool's depth: sats needed to move the mid price by each fraction, both ways, from the constant product
+  depth(id, steps = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2]) { const p = this.pool(id); if (!p) return []; return steps.map((f) => ({ move: f, buySats: Math.round(p.x * (Math.sqrt(1 + f) - 1)), sellSats: Math.round(p.x * (1 - 1 / Math.sqrt(1 + f))) })); } // x' = x·√(1+f) moves the price by (1+f)
   // --- quotes (the rule's arithmetic, in integers, rounded to the pool) ------------------
   invariant(x, y, x2, y2) { const dx = x2 > x ? x2 - x : 0n, dy = y2 > y ? y2 - y : 0n; return (1000n * x2 - FEE_PER_MILLE * dx) * (1000n * y2 - FEE_PER_MILLE * dy) >= 1000000n * x * y; }
   // sell sats for the asset, or the asset for sats; returns the exact out the rule allows

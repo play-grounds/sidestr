@@ -36,7 +36,7 @@ button { font:inherit; border:0; border-radius:10px; padding:.45rem .8rem; curso
 <body>
 <div class="app">
   <div class="top"><div><b>sidestr</b> <span class="pill">station</span></div><div class="mut" id="topright">opening…</div></div>
-  <nav class="rail"><a class="on" data-v="portfolio">Portfolio <span id="nchains"></span></a><a data-v="bridge">Bridge</a><a data-v="activity">Activity</a><a href="../tally/" target="_blank">Market ↗</a><a href="../ide/" target="_blank">Contracts ↗</a><a data-v="settings">Settings</a><div class="sp"></div><div class="who" id="who">one key, every chain</div></nav>
+  <nav class="rail"><a class="on" data-v="portfolio">Portfolio <span id="nchains"></span></a><a data-v="bridge">Bridge</a><a data-v="activity">Activity</a><a href="../exchange/" target="_blank">Market ↗</a><a href="../ide/" target="_blank">Contracts ↗</a><a data-v="settings">Settings</a><div class="sp"></div><div class="who" id="who">one key, every chain</div></nav>
   <main class="main" id="main"><div class="card"><div class="mut" id="boot">asking the relays which chains exist…</div></div></main>
   <aside class="side" id="side"></aside>
 </div>
@@ -117,7 +117,7 @@ function renderSettings() { const w0 = wallets.values().next().value; $('main').
 function renderSide() { const chains = [...wallets.values()]; const isPaused = (w) => !!(w.chain.pledge?.paused ?? w.chain.paused); const desk = chains.filter((w) => w.desk && !isPaused(w)); const paused = chains.filter((w) => w.desk && isPaused(w));
   $('side').innerHTML = `<div class="card"><h2>bridge</h2><div class="tiny">peg in from your parent coins, peg out to your parent address</div><button class="ac" style="margin-top:.6rem" id="gobridge">open the bridge</button></div>
     <div class="card"><h2>desk <span class="${desk.length ? 'good' : 'warn'}">${desk.length ? desk.length + ' open' : paused.length ? 'paused' : 'none'}</span></h2><div class="tiny">${desk.length ? 'locked parent rewards pledged for sats now: ' + desk.map((w) => esc(w.chain.name)).join(', ') + ' · in the plain wallet' : 'no desk is taking pledges right now'}</div></div>
-    <div class="card"><h2>market</h2><div class="tiny">the tally pool, in its own page</div><a href="../tally/" target="_blank" rel="noopener"><button style="margin-top:.6rem">open the market ↗</button></a></div>
+    <div class="card"><h2>market</h2><div class="tiny">the SHELL pool as an exchange screen: candles, depth, tape, market orders</div><a href="../exchange/" target="_blank" rel="noopener"><button style="margin-top:.6rem">open the exchange ↗</button></a></div>
     <div class="card"><h2>chains</h2>${rows.map((r) => `<div class="kv"><span>${esc(r.name)}</span><span class="mut">${r.tip} · ${age(r.lastBlock)} · ${r.blocks24h}/day</span></div>`).join('')}</div>`;
   $('gobridge').onclick = () => { view = 'bridge'; render(); }; }
 document.querySelectorAll('.rail a[data-v]').forEach((a) => { a.onclick = () => { view = a.dataset.v; render(); }; });
