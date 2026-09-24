@@ -46,7 +46,7 @@ button { font:inherit; border:0; border-radius:14px; padding:.75rem 1rem; cursor
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script type="module">
 import { listChains } from '../sidechains.mjs';
-import { openWallet, DEFAULTS } from 'https://cdn.jsdelivr.net/gh/sidestr/wallet@8c624e1661cfa5db14c27bf14e4f632d605a32ce/wallet.mjs';
+import { openWallet, DEFAULTS } from 'https://cdn.jsdelivr.net/gh/sidestr/wallet@bb8d06ac0755f6faa54d6126f483300ca2720109/wallet.mjs';
 const $ = (id) => document.getElementById(id); const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const LS = { get: (k) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} }, del: (k) => { try { localStorage.removeItem(k); } catch {} } };
 const sats = (n) => Number(n).toLocaleString('en-US');
