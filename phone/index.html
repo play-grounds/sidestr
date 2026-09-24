@@ -39,12 +39,13 @@ button { font:inherit; border:0; border-radius:14px; padding:.75rem 1rem; cursor
   <div class="top"><b>sidestr</b><span class="pill" id="pill">opening…</span></div>
   <div class="screen" id="screen"><div class="boot" id="boot">loading the wallet…</div></div>
   <div class="tabs">
-    <button class="on" data-tab="home">Home</button><button data-tab="activity">Activity</button><button data-tab="send">Send</button><button data-tab="tokens" id="tabtokens">Tokens</button>
+    <button class="on" data-tab="home">Home</button><button data-tab="activity">Activity</button><button data-tab="send">Send</button><button data-tab="tokens" id="tabtokens">Tokens</button><button data-tab="more">More</button>
   </div>
 </div>
-<p class="tiny">phone wallet, step 3: home, receive, activity, send and tokens · <a href="../" style="color:var(--mut)">directory</a> · <a href="https://sidestr.com/wallet/" style="color:var(--mut)">plain wallet</a></p>
+<p class="tiny">phone wallet: home, receive, activity, send, tokens, chains and settings · <a href="../" style="color:var(--mut)">directory</a> · <a href="https://sidestr.com/wallet/" style="color:var(--mut)">plain wallet</a></p>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script type="module">
+import { listChains } from '../sidechains.mjs';
 import { openWallet, DEFAULTS } from 'https://cdn.jsdelivr.net/gh/sidestr/wallet@8c624e1661cfa5db14c27bf14e4f632d605a32ce/wallet.mjs';
 const $ = (id) => document.getElementById(id); const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const LS = { get: (k) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} }, del: (k) => { try { localStorage.removeItem(k); } catch {} } };
@@ -79,8 +80,9 @@ async function boot() {
 }
 async function refreshEvm() { if (!w?.evm || !key) return; try { const b = await w.evmBalance(w.ethAddress(key)); evmBal = Number(b / 1000000000n); } catch { evmBal = null; } const el = $('evmbal'); if (el) el.textContent = evmBal === null ? '…' : sats(evmBal); }
 function render() {
-  $('pill').innerHTML = `${esc(w.chain.name)} · ${w.tip?.height ?? 0}${w.fromCache === null ? '' : ' ⚡'}`; $('pill').title = w.fromCache === null ? 'every block validated here' : `validated from the state saved here at block ${w.fromCache}`;
+  $('pill').innerHTML = `${esc(w.chain.name)} · ${w.tip?.height ?? 0}${w.fromCache === null ? '' : ' ⚡'} ▾`; $('pill').style.cursor = 'pointer'; $('pill').onclick = () => go('more'); $('pill').title = w.fromCache === null ? 'every block validated here' : `validated from the state saved here at block ${w.fromCache}`;
   const s = $('screen');
+  if (view === 'more') { renderMore(key ? w.identity(key) : null); return; }
   if (!key) { s.innerHTML = `<div class="card"><h2>your key</h2><p>No key in this browser for <b>${esc(w.chain.name)}</b>. Make one, or paste one you saved. The plain wallet shares it.</p>
     <div class="actions"><button class="ac" id="mk">make a new key</button><button id="imp">paste a key</button></div><div id="impbox" class="hidden" style="margin-top:.6rem"><input id="impv" placeholder="64 hex characters" autocomplete="off"><button id="impgo" style="margin-top:.5rem">use it</button><div class="err" id="imperr"></div></div></div>`;
     $('mk').onclick = () => { key = w.newKey(); LS.set(`sidestr_key:${w.chain.id}`, key); render(); refreshEvm(); };
@@ -97,6 +99,7 @@ function render() {
   }
   if (view === 'send') { renderSend(me, b); return; }
   if (view === 'tokens') { renderTokens(me); return; }
+  if (view === 'more') { renderMore(me); return; }
   if (view === 'receive') {
     s.innerHTML = `<div class="card sheet"><h2>receive on ${esc(w.chain.name)}</h2><div class="qr" id="qr"></div><div class="mono">${esc(me.address)}</div><div class="actions" style="width:100%"><button class="ac" id="copy">copy address</button><button id="back">done</button></div>
       ${w.evm ? `<div class="tiny" style="margin-top:.4rem">EVM side, same key:</div><div class="mono">${esc(w.ethAddress(key))}</div>` : ''}<div class="tiny">script ${esc(me.script.slice(0, 12))}…</div></div>`;
@@ -146,6 +149,21 @@ async function confirmSend(built, me) {
     for (let i = 0; i < 36; i++) { await new Promise((res) => setTimeout(res, 5000)); const m = await w.mined(built.txid); if (m) { const rc = built.ethHash ? w.evmReceipt(built.ethHash) : null; p.innerHTML = `<span class="${rc && rc.status !== 1 ? 'bad' : 'good'}">${rc ? (rc.status === 1 ? 'done' : 'mined, but the EVM call reverted') : 'sent'} in block ${m.height}</span>`; pending = null; refreshEvm(); setTimeout(() => go('activity'), 1500); return; } p.textContent = `published; waiting for the block… (${(i + 1) * 5} s)`; }
     p.innerHTML = '<span class="warn">published, but not on the mirror after 3 minutes; check activity later</span>';
   } catch (e) { p.innerHTML = `<span class="bad">${esc(e.message)}</span>`; $('confirm').disabled = false; $('drop').disabled = false; }
+}
+// --- more: every chain the relays announce (the directory's reading), and the settings the plain wallet keeps in its footer ---
+let chainRows = null;
+async function renderMore(me) {
+  const s = $('screen'); const age = (t) => { if (!t) return '—'; const m = Math.round((Date.now() / 1000 - t) / 60); return m < 60 ? `${m} min ago` : m < 2880 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} d ago`; };
+  s.innerHTML = `<div class="card"><h2>chains</h2><div id="chains"><div class="mut">asking the relays…</div></div></div>
+    <div class="card"><h2>settings</h2><div class="field"><label>relays (comma separated)</label><input id="relays" value="${esc(relays.join(','))}"><button id="saverelays" style="margin-top:.4rem">save and reload</button></div>
+      <div class="field" style="margin-top:.8rem"><label>validation</label><div class="tiny">${w.fromCache === null ? 'every block of this chain was validated in this browser' : `resumed from the state saved here at block ${w.fromCache}; blocks since were validated now`}</div><button id="verifyfull" style="margin-top:.4rem">drop the saved state and validate every block again</button></div>
+      ${me ? `<div class="field" style="margin-top:.8rem"><label>this key</label><div class="mono">${esc(me.address)}</div><div class="tiny">back it up before forgetting it: it is the only way to spend these coins</div><button id="showkey" style="margin-top:.4rem">show the key</button><div id="keybox" class="mono hidden" style="margin-top:.4rem;user-select:all"></div><button id="forget1" class="bad" style="margin-top:.4rem;background:var(--panel2)">forget this key in this browser</button><button id="forget2" class="hidden" style="margin-top:.4rem;background:var(--bad);color:#fff">yes, forget it</button></div>` : ''}</div>`;
+  $('saverelays').onclick = () => { LS.set('sidestr_relays', $('relays').value.trim()); location.reload(); };
+  $('verifyfull').onclick = async () => { await w.verifyFully(); location.reload(); };
+  if (me) { $('showkey').onclick = () => { $('keybox').textContent = key; $('keybox').classList.toggle('hidden'); }; $('forget1').onclick = () => $('forget2').classList.remove('hidden'); $('forget2').onclick = () => { LS.del(`sidestr_key:${w.chain.id}`); key = null; go('home'); }; }
+  if (!chainRows) { try { chainRows = await listChains({ relays }); } catch (e) { chainRows = []; } }
+  const el = $('chains'); if (!el) return;
+  el.innerHTML = chainRows.length ? chainRows.map((c) => `<a class="act" href="?chain=${encodeURIComponent(c.id)}"><div class="ic">${esc((c.name ?? c.id).slice(0, 2))}</div><div class="t"><div>${esc(c.name ?? c.id)}${c.id === w.chain.id ? ' <span class="tiny">· open</span>' : ''}${c.rules?.length ? ` <span class="tiny">· ${esc(c.rules.join(', '))}</span>` : ''}</div><div>${c.parent ? 'beside ' + esc(c.parent) + ' · ' : ''}block ${c.tip} · ${esc(age(c.lastBlock))}${c.ok === false ? ' · <span class="bad">no mirror</span>' : ''}</div></div><div class="amt tiny">${c.blocks24h} / day</div></a>`).join('') : '<div class="mut">no chains answered from the relays</div>';
 }
 // --- tokens: ERC-20 contracts this browser remembers for the chain, read from the page's own EVM state ---
 async function renderTokens(me) {
