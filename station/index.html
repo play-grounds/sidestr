@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>sidestr · station, a sketch</title>
+<meta property="og:site_name" content="sidestr">
+<meta property="og:title" content="sidestr station, sketched">
+<meta property="og:description" content="A static sketch of a wide, estate-first view: every chain you hold as a row, the bridge, the desk, the market and activity side by side. Nothing here is live.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://play-grounds.github.io/sidestr/station/">
+<meta property="og:image" content="https://play-grounds.github.io/sidestr/mock/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<style>
+:root { --bg:#0b0d12; --panel:#151923; --panel2:#1d2331; --line:#262d3d; --text:#eef1f7; --mut:#8b93a7; --ac:#7c5cff; --ac2:#2dd4bf; --good:#34d399; --warn:#f5b84f; --bad:#f87171; --mono:ui-monospace,Menlo,Consolas,monospace }
+* { box-sizing:border-box } html,body { margin:0; background:#05060a; color:var(--text); font:14px/1.45 -apple-system,Inter,Segoe UI,Roboto,sans-serif }
+.app { display:grid; grid-template-columns:200px 1fr 340px; grid-template-rows:56px 1fr; min-height:100vh }
+.top { grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; padding:0 1.2rem; border-bottom:1px solid var(--line); background:var(--bg) } .top b { font-size:1.05rem } .pill { font-size:.75rem; color:var(--mut); border:1px solid var(--line); border-radius:999px; padding:.15rem .6rem; margin-left:.4rem }
+.rail { border-right:1px solid var(--line); background:var(--bg); padding:1rem .6rem; display:flex; flex-direction:column; gap:.2rem } .rail a { color:var(--mut); text-decoration:none; padding:.55rem .7rem; border-radius:10px; display:flex; justify-content:space-between } .rail a.on { background:var(--panel); color:var(--text) } .rail .sp { flex:1 } .rail .who { font-size:.75rem; color:var(--mut); padding:.6rem .7rem; border-top:1px solid var(--line) }
+.main { padding:1.2rem; display:flex; flex-direction:column; gap:1rem; min-width:0 } .side { border-left:1px solid var(--line); padding:1.2rem 1rem; display:flex; flex-direction:column; gap:1rem; background:var(--bg) }
+.card { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:1rem 1.1rem } .card h2 { margin:0 0 .6rem; font-size:.78rem; letter-spacing:.06em; text-transform:uppercase; color:var(--mut); display:flex; justify-content:space-between } .card h2 span { font-weight:400; text-transform:none; letter-spacing:0 }
+.stats { display:grid; grid-template-columns:repeat(4,1fr); gap:.8rem } .stat { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:.9rem 1rem } .stat .k { font-size:.75rem; color:var(--mut) } .stat .v { font-size:1.5rem; font-weight:700; letter-spacing:-.02em } .stat .v small { font-size:.8rem; color:var(--mut); font-weight:500; margin-left:.25rem }
+table { width:100%; border-collapse:collapse } th { text-align:left; font-size:.72rem; color:var(--mut); font-weight:500; padding:.4rem .5rem; border-bottom:1px solid var(--line) } td { padding:.6rem .5rem; border-bottom:1px solid var(--line); vertical-align:middle } tr:last-child td { border-bottom:0 } .r { text-align:right } .mono { font-family:var(--mono); font-size:.8rem } .mut { color:var(--mut) } .good { color:var(--good) } .warn { color:var(--warn) } .bad { color:var(--bad) }
+.tag { font-size:.7rem; border:1px solid var(--line); border-radius:999px; padding:.05rem .45rem; color:var(--mut); margin-left:.3rem } .dot { display:inline-block; width:.5rem; height:.5rem; border-radius:50%; background:var(--good); margin-right:.4rem } .dot.warn { background:var(--warn) } .dot.mut { background:var(--mut) }
+button { font:inherit; border:0; border-radius:10px; padding:.45rem .8rem; cursor:pointer; background:var(--panel2); color:var(--text) } button.ac { background:var(--ac); color:#fff; font-weight:600 } button.sm { padding:.3rem .6rem; font-size:.78rem }
+input,select { font:inherit; background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:10px; padding:.55rem .7rem; width:100% } .field { display:flex; flex-direction:column; gap:.25rem; margin-bottom:.6rem } .field label { font-size:.72rem; color:var(--mut) }
+.seg { display:flex; background:var(--panel2); border-radius:10px; padding:.15rem; margin-bottom:.7rem } .seg button { flex:1; background:transparent; color:var(--mut); padding:.4rem } .seg button.on { background:var(--panel); color:var(--text) }
+.act { display:flex; align-items:center; gap:.6rem; padding:.45rem 0; border-top:1px solid var(--line) } .act:first-of-type { border-top:0 } .act .ic { width:1.7rem; height:1.7rem; border-radius:50%; background:var(--panel2); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.8rem; flex:none } .act .t { flex:1; min-width:0 } .act .t div:last-child { font-size:.72rem; color:var(--mut) } .act .amt { font-weight:600; white-space:nowrap }
+.note { background:#1a1626; border:1px dashed #4b3f8f; color:#c9bfff; border-radius:12px; padding:.6rem .9rem; font-size:.85rem } .q { color:var(--ac2) }
+@media (max-width:1000px) { .app { grid-template-columns:1fr } .rail,.side { border:0 } .stats { grid-template-columns:repeat(2,1fr) } }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top"><div><b>sidestr</b> <span class="pill">station · sketch</span></div><div class="mut">key <span class="mono">mel1pa9ml…zpl4</span> · <span class="pill">9 chains from the relays</span> <span class="pill">⚡ cached</span></div></div>
+  <nav class="rail">
+    <a class="on" href="#">Portfolio <span>9</span></a><a href="#">Bridge</a><a href="#">Desk <span class="warn">paused</span></a><a href="#">Market</a><a href="#">Activity</a><a href="#">Contracts</a><a href="#">Settings</a>
+    <div class="sp"></div><div class="who">one key, every chain<br>did:nostr:e977f3…</div>
+  </nav>
+  <main class="main">
+    <div class="note">A sketch. Every number is a stand-in from the real chains; nothing reads a relay. Points marked <span class="q">?</span> are the decisions to make before building.</div>
+    <div class="stats">
+      <div class="stat"><div class="k">across all chains</div><div class="v">25,197,536<small>sats</small></div></div>
+      <div class="stat"><div class="k">on EVM sides</div><div class="v">120,000<small>sats</small></div></div>
+      <div class="stat"><div class="k">tokens</div><div class="v">2<small>contracts</small></div></div>
+      <div class="stat"><div class="k">locked on the parent <span class="q">?</span></div><div class="v">0<small>sats · desk paused</small></div></div>
+    </div>
+    <div class="card"><h2>positions <span class="mut">one row per chain you hold coins on · others below the fold <span class="q">?</span></span></h2>
+      <table><tr><th>chain</th><th>beside</th><th class="r">balance</th><th class="r">EVM side</th><th>tokens</th><th>last block</th><th></th></tr>
+        <tr><td><span class="dot"></span><b>siding</b> <span class="tag">reference</span></td><td class="mut">txbt4</td><td class="r mono">25,010,020</td><td class="r mut">—</td><td class="mut">—</td><td class="mut">41 min</td><td class="r"><button class="sm">send</button> <button class="sm">receive</button></td></tr>
+        <tr><td><span class="dot"></span><b>txbt4-evm</b> <span class="tag">evm</span></td><td class="mut">txbt4</td><td class="r mono">100,000</td><td class="r mono">120,000</td><td>FAUCET, TIDE</td><td class="mut">8 min</td><td class="r"><button class="sm">send</button> <button class="sm">deposit</button></td></tr>
+        <tr><td><span class="dot"></span><b>melchain</b></td><td class="mut">txbt4</td><td class="r mono">87,516</td><td class="r mut">—</td><td class="mut">—</td><td class="mut">12 min</td><td class="r"><button class="sm">send</button> <button class="sm">receive</button></td></tr>
+        <tr><td><span class="dot warn"></span><b>tally</b> <span class="tag">assets, pool</span></td><td class="mut">txbt4</td><td class="r mono">0</td><td class="r mut">—</td><td class="mut">—</td><td class="mut">37 min</td><td class="r"><button class="sm">peg in</button></td></tr>
+        <tr><td><span class="dot mut"></span><b>dreamlab</b> <span class="tag">stock</span></td><td class="mut">tbtc4</td><td class="r mono mut">0</td><td class="r mut">—</td><td class="mut">—</td><td class="mut">3 min</td><td class="r"><button class="sm">open</button></td></tr>
+      </table></div>
+    <div class="card"><h2>activity <span class="mut">every chain, newest first <span class="q">?</span> grouped by chain or one stream</span></h2>
+      <div class="act"><div class="ic">−</div><div class="t"><div>sent 2,000 sats · melchain</div><div>Sep 24, 12:14 · block 649</div></div><div class="amt">−2,155</div></div>
+      <div class="act"><div class="ic">⚙</div><div class="t"><div>EVM · call to 0x78598f93… · txbt4-evm</div><div>Sep 24, 12:24 · block 693</div></div><div class="amt mut">gas 56,279</div></div>
+      <div class="act"><div class="ic good">+</div><div class="t"><div>received from the faucet · txbt4-evm</div><div>Sep 24, 12:24 · block 693</div></div><div class="amt good">+100,000</div></div>
+      <div class="act"><div class="ic">⇄</div><div class="t"><div>peg-out paid on txbt4 · siding</div><div>Sep 18 · parent tx 94b98b0c…</div></div><div class="amt">−100,000</div></div>
+    </div>
+  </main>
+  <aside class="side">
+    <div class="card"><h2>bridge <span class="mut">peg in · peg out</span></h2>
+      <div class="seg"><button class="on">peg in</button><button>peg out</button></div>
+      <div class="field"><label>from</label><select><option>txbt4 · your parent wallet (tb1p…) <span class="q">?</span></option></select></div>
+      <div class="field"><label>to chain</label><select><option>melchain</option><option>txbt4-evm</option><option>tally</option></select></div>
+      <div class="field"><label>amount</label><input value="1,000,000 sats"></div>
+      <div class="mut" style="font-size:.78rem;margin-bottom:.6rem">6 parent confirmations, then a claim, then 100 chain blocks to mature. The marker names your script on that chain.</div>
+      <button class="ac" style="width:100%">review peg-in</button>
+      <div class="note" style="margin-top:.6rem"><span class="q">?</span> a peg-in needs a parent wallet: is that your node's, a browser key on txbt4, or a paste-in PSBT?</div>
+    </div>
+    <div class="card"><h2>desk <span class="warn">paused until October</span></h2>
+      <div class="mut" style="font-size:.85rem">locked parent rewards pledged for sats now. Nothing to list for this key. The panel returns when the desk unpauses.</div>
+    </div>
+    <div class="card"><h2>market <span class="mut">tally pool</span></h2>
+      <div class="field"><label>you give</label><input value="10,000 sats"></div><div class="field"><label>you get</label><input value="≈ 9.87 TIDE"></div>
+      <button style="width:100%">swap (sketch)</button>
+      <div class="note" style="margin-top:.6rem"><span class="q">?</span> the tally market lives in play-grounds today; embed it, or link out?</div>
+    </div>
+  </aside>
+</div>
+</body>
+</html>
