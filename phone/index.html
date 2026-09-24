@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>sidestr · phone wallet</title>
+<meta property="og:site_name" content="sidestr">
+<meta property="og:title" content="sidestr phone wallet">
+<meta property="og:description" content="A phone-first wallet for sidestr chains: one balance, the EVM side beside it, receive with a QR, a faucet. Every block validated in the page.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://play-grounds.github.io/sidestr/phone/">
+<meta property="og:image" content="https://play-grounds.github.io/sidestr/mock/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root { --bg:#0b0d12; --panel:#151923; --panel2:#1d2331; --line:#262d3d; --text:#eef1f7; --mut:#8b93a7; --ac:#7c5cff; --ac2:#2dd4bf; --good:#34d399; --warn:#f5b84f; --bad:#f87171; --mono:ui-monospace,Menlo,Consolas,monospace }
+* { box-sizing:border-box } html,body { margin:0; background:#05060a; color:var(--text); font:15px/1.45 -apple-system,Inter,Segoe UI,Roboto,sans-serif }
+body { min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:1rem 1rem 2rem }
+.phone { width:100%; max-width:420px; background:var(--bg); border:1px solid var(--line); border-radius:28px; min-height:78vh; display:flex; flex-direction:column; overflow:hidden }
+.top { display:flex; align-items:center; justify-content:space-between; padding:1rem 1.1rem .4rem } .top b { font-size:1.05rem } .pill { font-size:.75rem; color:var(--mut); border:1px solid var(--line); border-radius:999px; padding:.15rem .6rem }
+.screen { flex:1; padding:.6rem 1.1rem 1rem; display:flex; flex-direction:column; gap:.9rem }
+.card { background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:1rem 1.1rem } .card h2 { margin:0 0 .5rem; font-size:.8rem; letter-spacing:.06em; text-transform:uppercase; color:var(--mut) }
+.big { font-size:2.1rem; font-weight:700; letter-spacing:-.02em } .big small { font-size:1rem; color:var(--mut); font-weight:500; margin-left:.3rem }
+.row { display:flex; justify-content:space-between; align-items:center; gap:.6rem; padding:.35rem 0; border-top:1px solid var(--line) } .row:first-of-type { border-top:0 }
+.mut { color:var(--mut) } .mono { font-family:var(--mono); font-size:.82rem; word-break:break-all } .good { color:var(--good) } .bad { color:var(--bad) } .warn { color:var(--warn) }
+button { font:inherit; border:0; border-radius:14px; padding:.75rem 1rem; cursor:pointer; background:var(--panel2); color:var(--text) } button.ac { background:var(--ac); color:#fff; font-weight:600 } button:disabled { opacity:.5; cursor:default }
+.actions { display:grid; grid-template-columns:1fr 1fr; gap:.6rem } input,textarea { width:100%; font:inherit; background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:12px; padding:.7rem .8rem }
+.tabs { display:flex; border-top:1px solid var(--line); background:var(--panel) } .tabs button { flex:1; border-radius:0; background:transparent; color:var(--mut); padding:.9rem 0; font-size:.8rem } .tabs button.on { color:var(--text) }
+.qr { background:#fff; padding:.6rem; border-radius:12px; display:inline-block; line-height:0 } .qr img,.qr canvas,.qr table { max-width:100% }
+.boot { color:var(--mut); font-size:.85rem; padding:1rem 1.1rem } .err { color:var(--bad); font-size:.9rem } .sheet { display:flex; flex-direction:column; gap:.7rem; align-items:center; text-align:center }
+.tiny { font-size:.72rem; color:var(--mut) } .hidden { display:none }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="top"><b>sidestr</b><span class="pill" id="pill">opening…</span></div>
+  <div class="screen" id="screen"><div class="boot" id="boot">loading the wallet…</div></div>
+  <div class="tabs">
+    <button class="on" data-tab="home">Home</button><button data-tab="activity" disabled title="next">Activity</button><button data-tab="send" disabled title="next">Send</button><button data-tab="more" disabled title="next">More</button>
+  </div>
+</div>
+<p class="tiny">phone wallet, step 1: home and receive · <a href="../" style="color:var(--mut)">directory</a> · <a href="https://sidestr.com/wallet/" style="color:var(--mut)">plain wallet</a></p>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script type="module">
+import { openWallet, DEFAULTS } from 'https://cdn.jsdelivr.net/gh/sidestr/wallet@959e9210a2d0c7f8b709f39051eadeda075cb66c/wallet.mjs';
+const $ = (id) => document.getElementById(id); const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+const LS = { get: (k) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} }, del: (k) => { try { localStorage.removeItem(k); } catch {} } };
+const sats = (n) => Number(n).toLocaleString('en-US');
+const q = new URLSearchParams(location.search); const chainId = q.get('chain') ?? 'sidestr:txbt4-evm'; const mirror = q.get('mirror') ?? undefined;
+let w = null, key = null, view = 'home', evmBal = null;
+const relays = (LS.get('sidestr_relays') ?? DEFAULTS.relays.join(',')).split(',').map((x) => x.trim()).filter(Boolean);
+async function boot() {
+  try {
+    w = await openWallet({ chain: mirror ? undefined : chainId, mirror, relays, store: { get: LS.get, set: LS.set, delete: LS.del }, onProgress: (s) => { const b = $('boot'); if (b) b.textContent = s + '…'; } });
+    key = LS.get(`sidestr_key:${w.chain.id}`); // the same key the plain wallet keeps for this chain
+    render(); refreshEvm();
+    w.followTips(async (t) => { for (let i = 0; i < 6 && (w.tip?.height ?? -1) < t.tip; i++) { await new Promise((r) => setTimeout(r, 2500)); await w.refresh(); } render(); refreshEvm(); });
+  } catch (e) { $('screen').innerHTML = `<div class="card"><div class="err"><b>could not open ${esc(chainId)}</b><br>${esc(e.message)}</div></div>`; console.error(e); }
+}
+async function refreshEvm() { if (!w?.evm || !key) return; try { const b = await w.evmBalance(w.ethAddress(key)); evmBal = Number(b / 1000000000n); } catch { evmBal = null; } const el = $('evmbal'); if (el) el.textContent = evmBal === null ? '…' : sats(evmBal); }
+function render() {
+  $('pill').innerHTML = `${esc(w.chain.name)} · ${w.tip?.height ?? 0}${w.fromCache === null ? '' : ' ⚡'}`; $('pill').title = w.fromCache === null ? 'every block validated here' : `validated from the state saved here at block ${w.fromCache}`;
+  const s = $('screen');
+  if (!key) { s.innerHTML = `<div class="card"><h2>your key</h2><p>No key in this browser for <b>${esc(w.chain.name)}</b>. Make one, or paste one you saved. The plain wallet shares it.</p>
+    <div class="actions"><button class="ac" id="mk">make a new key</button><button id="imp">paste a key</button></div><div id="impbox" class="hidden" style="margin-top:.6rem"><input id="impv" placeholder="64 hex characters" autocomplete="off"><button id="impgo" style="margin-top:.5rem">use it</button><div class="err" id="imperr"></div></div></div>`;
+    $('mk').onclick = () => { key = w.newKey(); LS.set(`sidestr_key:${w.chain.id}`, key); render(); refreshEvm(); };
+    $('imp').onclick = () => $('impbox').classList.toggle('hidden');
+    $('impgo').onclick = () => { const v = $('impv').value.trim().toLowerCase(); try { w.identity(v); key = v; LS.set(`sidestr_key:${w.chain.id}`, key); render(); refreshEvm(); } catch (e) { $('imperr').textContent = e.message; } };
+    return;
+  }
+  const me = w.identity(key); const b = w.balance(me.script); const coins = w.coins(me.script);
+  if (view === 'receive') {
+    s.innerHTML = `<div class="card sheet"><h2>receive on ${esc(w.chain.name)}</h2><div class="qr" id="qr"></div><div class="mono">${esc(me.address)}</div><div class="actions" style="width:100%"><button class="ac" id="copy">copy address</button><button id="back">done</button></div>
+      ${w.evm ? `<div class="tiny" style="margin-top:.4rem">EVM side, same key:</div><div class="mono">${esc(w.ethAddress(key))}</div>` : ''}<div class="tiny">script ${esc(me.script.slice(0, 12))}…</div></div>`;
+    try { const qr = qrcode(0, 'M'); qr.addData(me.address.toUpperCase()); qr.make(); $('qr').innerHTML = qr.createSvgTag({ cellSize: 4, margin: 0 }); } catch { $('qr').textContent = 'QR unavailable'; }
+    $('copy').onclick = async () => { try { await navigator.clipboard.writeText(me.address); $('copy').textContent = 'copied'; } catch { $('copy').textContent = 'select and copy'; } };
+    $('back').onclick = () => { view = 'home'; render(); }; return;
+  }
+  s.innerHTML = `<div class="card"><h2>balance</h2><div class="big">${sats(b.spendable)}<small>sats</small></div>
+      ${b.immature ? `<div class="mut">+ ${sats(b.immature)} maturing</div>` : ''}${w.evm ? `<div class="row" style="margin-top:.6rem"><span class="mut">EVM side</span><span><b id="evmbal">${evmBal === null ? '…' : sats(evmBal)}</b> <span class="mut">sats</span></span></div>` : ''}
+      <div class="actions" style="margin-top:.8rem"><button class="ac" id="recv">receive</button><button id="faucet">get test coins</button></div><div class="tiny" id="fmsg" style="margin-top:.5rem"></div></div>
+    <div class="card"><h2>coins</h2>${coins.length ? coins.slice(0, 6).map((c) => `<div class="row"><span class="mono">${esc(c.outpoint.slice(0, 10))}…</span><span>${sats(c.value)} <span class="mut">${c.mature ? '' : 'matures at ' + c.maturesAt}</span></span></div>`).join('') + (coins.length > 6 ? `<div class="tiny">and ${coins.length - 6} more</div>` : '') : '<div class="mut">nothing yet — ask the faucet, or receive from someone</div>'}</div>
+    <div class="card"><h2>this chain</h2><div class="row"><span class="mut">id</span><span class="mono">${esc(w.chain.id)}</span></div><div class="row"><span class="mut">beside</span><span>${esc(w.chain.parent)}</span></div><div class="row"><span class="mut">rules</span><span>${esc((w.chain.rules ?? []).join(', ') || 'none')}</span></div><div class="row"><span class="mut">mirror</span><span class="mono">${esc(w.mirror.replace(/^https?:\/\//, ''))}</span></div></div>`;
+  $('recv').onclick = () => { view = 'receive'; render(); };
+  $('faucet').onclick = async () => { const btn = $('faucet'), m = $('fmsg'); btn.disabled = true; m.textContent = 'asking a faucet on the relays…'; try { const r = await w.requestFaucet(me.address, relays); if (!r.accepted) throw new Error('no relay accepted the request'); const before = w.balance(me.script).total;
+      for (let i = 0; i < 12; i++) { await new Promise((res) => setTimeout(res, 5000)); await w.refresh(); if (w.balance(me.script).total > before) { m.textContent = ''; return render(); } m.textContent = `asked (${(i + 1) * 5} s)… coins arrive within a minute if a faucet is listening`; }
+      m.textContent = 'no coins arrived; this address may have been paid in the last 24 h, or no faucet is listening'; } catch (e) { m.textContent = e.message; } finally { btn.disabled = false; } };
+}
+document.querySelectorAll('.tabs button').forEach((btn) => { btn.onclick = () => { if (btn.disabled) return; document.querySelectorAll('.tabs button').forEach((b) => b.classList.toggle('on', b === btn)); view = btn.dataset.tab === 'home' ? 'home' : view; render(); }; });
+boot();
+</script>
+</body>
+</html>
