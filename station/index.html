@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>sidestr · station, a sketch</title>
+<title>sidestr · station</title>
 <meta property="og:site_name" content="sidestr">
-<meta property="og:title" content="sidestr station, sketched">
-<meta property="og:description" content="A static sketch of a wide, estate-first view: every chain you hold as a row, the bridge, the desk, the market and activity side by side. Nothing here is live.">
+<meta property="og:title" content="sidestr station">
+<meta property="og:description" content="One key, every sidestr chain: positions per chain, activity across chains, the bridge to and from the parent, tokens and the market. Every chain validated in the page.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://play-grounds.github.io/sidestr/station/">
 <meta property="og:image" content="https://play-grounds.github.io/sidestr/mock/og.png">
@@ -14,71 +14,113 @@
 <style>
 :root { --bg:#0b0d12; --panel:#151923; --panel2:#1d2331; --line:#262d3d; --text:#eef1f7; --mut:#8b93a7; --ac:#7c5cff; --ac2:#2dd4bf; --good:#34d399; --warn:#f5b84f; --bad:#f87171; --mono:ui-monospace,Menlo,Consolas,monospace }
 * { box-sizing:border-box } html,body { margin:0; background:#05060a; color:var(--text); font:14px/1.45 -apple-system,Inter,Segoe UI,Roboto,sans-serif }
-.app { display:grid; grid-template-columns:200px 1fr 340px; grid-template-rows:56px 1fr; min-height:100vh }
+.app { display:grid; grid-template-columns:200px 1fr 360px; grid-template-rows:56px 1fr; min-height:100vh }
 .top { grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; padding:0 1.2rem; border-bottom:1px solid var(--line); background:var(--bg) } .top b { font-size:1.05rem } .pill { font-size:.75rem; color:var(--mut); border:1px solid var(--line); border-radius:999px; padding:.15rem .6rem; margin-left:.4rem }
-.rail { border-right:1px solid var(--line); background:var(--bg); padding:1rem .6rem; display:flex; flex-direction:column; gap:.2rem } .rail a { color:var(--mut); text-decoration:none; padding:.55rem .7rem; border-radius:10px; display:flex; justify-content:space-between } .rail a.on { background:var(--panel); color:var(--text) } .rail .sp { flex:1 } .rail .who { font-size:.75rem; color:var(--mut); padding:.6rem .7rem; border-top:1px solid var(--line) }
+.rail { border-right:1px solid var(--line); background:var(--bg); padding:1rem .6rem; display:flex; flex-direction:column; gap:.2rem } .rail a { color:var(--mut); text-decoration:none; padding:.55rem .7rem; border-radius:10px; display:flex; justify-content:space-between; cursor:pointer } .rail a.on { background:var(--panel); color:var(--text) } .rail .sp { flex:1 } .rail .who { font-size:.75rem; color:var(--mut); padding:.6rem .7rem; border-top:1px solid var(--line); word-break:break-all }
 .main { padding:1.2rem; display:flex; flex-direction:column; gap:1rem; min-width:0 } .side { border-left:1px solid var(--line); padding:1.2rem 1rem; display:flex; flex-direction:column; gap:1rem; background:var(--bg) }
 .card { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:1rem 1.1rem } .card h2 { margin:0 0 .6rem; font-size:.78rem; letter-spacing:.06em; text-transform:uppercase; color:var(--mut); display:flex; justify-content:space-between } .card h2 span { font-weight:400; text-transform:none; letter-spacing:0 }
 .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:.8rem } .stat { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:.9rem 1rem } .stat .k { font-size:.75rem; color:var(--mut) } .stat .v { font-size:1.5rem; font-weight:700; letter-spacing:-.02em } .stat .v small { font-size:.8rem; color:var(--mut); font-weight:500; margin-left:.25rem }
-table { width:100%; border-collapse:collapse } th { text-align:left; font-size:.72rem; color:var(--mut); font-weight:500; padding:.4rem .5rem; border-bottom:1px solid var(--line) } td { padding:.6rem .5rem; border-bottom:1px solid var(--line); vertical-align:middle } tr:last-child td { border-bottom:0 } .r { text-align:right } .mono { font-family:var(--mono); font-size:.8rem } .mut { color:var(--mut) } .good { color:var(--good) } .warn { color:var(--warn) } .bad { color:var(--bad) }
-.tag { font-size:.7rem; border:1px solid var(--line); border-radius:999px; padding:.05rem .45rem; color:var(--mut); margin-left:.3rem } .dot { display:inline-block; width:.5rem; height:.5rem; border-radius:50%; background:var(--good); margin-right:.4rem } .dot.warn { background:var(--warn) } .dot.mut { background:var(--mut) }
-button { font:inherit; border:0; border-radius:10px; padding:.45rem .8rem; cursor:pointer; background:var(--panel2); color:var(--text) } button.ac { background:var(--ac); color:#fff; font-weight:600 } button.sm { padding:.3rem .6rem; font-size:.78rem }
-input,select { font:inherit; background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:10px; padding:.55rem .7rem; width:100% } .field { display:flex; flex-direction:column; gap:.25rem; margin-bottom:.6rem } .field label { font-size:.72rem; color:var(--mut) }
+table { width:100%; border-collapse:collapse } th { text-align:left; font-size:.72rem; color:var(--mut); font-weight:500; padding:.4rem .5rem; border-bottom:1px solid var(--line) } td { padding:.55rem .5rem; border-bottom:1px solid var(--line); vertical-align:middle } tr:last-child td { border-bottom:0 } .r { text-align:right } .mono { font-family:var(--mono); font-size:.8rem } .mut { color:var(--mut) } .good { color:var(--good) } .warn { color:var(--warn) } .bad { color:var(--bad) }
+.tag { font-size:.7rem; border:1px solid var(--line); border-radius:999px; padding:.05rem .45rem; color:var(--mut); margin-left:.3rem } .dot { display:inline-block; width:.5rem; height:.5rem; border-radius:50%; background:var(--good); margin-right:.4rem } .dot.warn { background:var(--warn) } .dot.mut { background:var(--mut) } .dot.bad { background:var(--bad) }
+button { font:inherit; border:0; border-radius:10px; padding:.45rem .8rem; cursor:pointer; background:var(--panel2); color:var(--text) } button.ac { background:var(--ac); color:#fff; font-weight:600 } button.sm { padding:.3rem .6rem; font-size:.78rem } button:disabled { opacity:.5; cursor:default }
+#main .card button { width:auto } input,select,textarea { font:inherit; background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:10px; padding:.55rem .7rem; width:100% } .field { display:flex; flex-direction:column; gap:.25rem; margin-bottom:.6rem } .field label { font-size:.72rem; color:var(--mut) }
 .seg { display:flex; background:var(--panel2); border-radius:10px; padding:.15rem; margin-bottom:.7rem } .seg button { flex:1; background:transparent; color:var(--mut); padding:.4rem } .seg button.on { background:var(--panel); color:var(--text) }
-.act { display:flex; align-items:center; gap:.6rem; padding:.45rem 0; border-top:1px solid var(--line) } .act:first-of-type { border-top:0 } .act .ic { width:1.7rem; height:1.7rem; border-radius:50%; background:var(--panel2); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.8rem; flex:none } .act .t { flex:1; min-width:0 } .act .t div:last-child { font-size:.72rem; color:var(--mut) } .act .amt { font-weight:600; white-space:nowrap }
-.note { background:#1a1626; border:1px dashed #4b3f8f; color:#c9bfff; border-radius:12px; padding:.6rem .9rem; font-size:.85rem } .q { color:var(--ac2) }
+.act { display:flex; align-items:center; gap:.6rem; padding:.45rem 0; border-top:1px solid var(--line); color:inherit; text-decoration:none } .act:first-of-type { border-top:0 } .act .ic { width:1.7rem; height:1.7rem; border-radius:50%; background:var(--panel2); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.8rem; flex:none } .act .t { flex:1; min-width:0 } .act .t div:last-child { font-size:.72rem; color:var(--mut); overflow:hidden; text-overflow:ellipsis; white-space:nowrap } .act .amt { font-weight:600; white-space:nowrap }
+.kv { display:flex; justify-content:space-between; gap:1rem; padding:.3rem 0; border-top:1px solid var(--line); font-size:.88rem } .kv:first-child { border-top:0 } .kv span:last-child { text-align:right; word-break:break-all }
+.tiny { font-size:.72rem; color:var(--mut) } .hidden { display:none } .err { color:var(--bad); font-size:.85rem }
+.modal { position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:1rem } .modal .card { width:100%; max-width:460px }
 @media (max-width:1000px) { .app { grid-template-columns:1fr } .rail,.side { border:0 } .stats { grid-template-columns:repeat(2,1fr) } }
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="top"><div><b>sidestr</b> <span class="pill">station · sketch</span></div><div class="mut">key <span class="mono">mel1pa9ml…zpl4</span> · <span class="pill">9 chains from the relays</span> <span class="pill">⚡ cached</span></div></div>
-  <nav class="rail">
-    <a class="on" href="#">Portfolio <span>9</span></a><a href="#">Bridge</a><a href="#">Desk <span class="warn">paused</span></a><a href="#">Market</a><a href="#">Activity</a><a href="#">Contracts</a><a href="#">Settings</a>
-    <div class="sp"></div><div class="who">one key, every chain<br>did:nostr:e977f3…</div>
-  </nav>
-  <main class="main">
-    <div class="note">A sketch. Every number is a stand-in from the real chains; nothing reads a relay. Points marked <span class="q">?</span> are the decisions to make before building.</div>
-    <div class="stats">
-      <div class="stat"><div class="k">across all chains</div><div class="v">25,197,536<small>sats</small></div></div>
-      <div class="stat"><div class="k">on EVM sides</div><div class="v">120,000<small>sats</small></div></div>
-      <div class="stat"><div class="k">tokens</div><div class="v">2<small>contracts</small></div></div>
-      <div class="stat"><div class="k">locked on the parent <span class="q">?</span></div><div class="v">0<small>sats · desk paused</small></div></div>
-    </div>
-    <div class="card"><h2>positions <span class="mut">one row per chain you hold coins on · others below the fold <span class="q">?</span></span></h2>
-      <table><tr><th>chain</th><th>beside</th><th class="r">balance</th><th class="r">EVM side</th><th>tokens</th><th>last block</th><th></th></tr>
-        <tr><td><span class="dot"></span><b>siding</b> <span class="tag">reference</span></td><td class="mut">txbt4</td><td class="r mono">25,010,020</td><td class="r mut">—</td><td class="mut">—</td><td class="mut">41 min</td><td class="r"><button class="sm">send</button> <button class="sm">receive</button></td></tr>
-        <tr><td><span class="dot"></span><b>txbt4-evm</b> <span class="tag">evm</span></td><td class="mut">txbt4</td><td class="r mono">100,000</td><td class="r mono">120,000</td><td>FAUCET, TIDE</td><td class="mut">8 min</td><td class="r"><button class="sm">send</button> <button class="sm">deposit</button></td></tr>
-        <tr><td><span class="dot"></span><b>melchain</b></td><td class="mut">txbt4</td><td class="r mono">87,516</td><td class="r mut">—</td><td class="mut">—</td><td class="mut">12 min</td><td class="r"><button class="sm">send</button> <button class="sm">receive</button></td></tr>
-        <tr><td><span class="dot warn"></span><b>tally</b> <span class="tag">assets, pool</span></td><td class="mut">txbt4</td><td class="r mono">0</td><td class="r mut">—</td><td class="mut">—</td><td class="mut">37 min</td><td class="r"><button class="sm">peg in</button></td></tr>
-        <tr><td><span class="dot mut"></span><b>dreamlab</b> <span class="tag">stock</span></td><td class="mut">tbtc4</td><td class="r mono mut">0</td><td class="r mut">—</td><td class="mut">—</td><td class="mut">3 min</td><td class="r"><button class="sm">open</button></td></tr>
-      </table></div>
-    <div class="card"><h2>activity <span class="mut">every chain, newest first <span class="q">?</span> grouped by chain or one stream</span></h2>
-      <div class="act"><div class="ic">−</div><div class="t"><div>sent 2,000 sats · melchain</div><div>Sep 24, 12:14 · block 649</div></div><div class="amt">−2,155</div></div>
-      <div class="act"><div class="ic">⚙</div><div class="t"><div>EVM · call to 0x78598f93… · txbt4-evm</div><div>Sep 24, 12:24 · block 693</div></div><div class="amt mut">gas 56,279</div></div>
-      <div class="act"><div class="ic good">+</div><div class="t"><div>received from the faucet · txbt4-evm</div><div>Sep 24, 12:24 · block 693</div></div><div class="amt good">+100,000</div></div>
-      <div class="act"><div class="ic">⇄</div><div class="t"><div>peg-out paid on txbt4 · siding</div><div>Sep 18 · parent tx 94b98b0c…</div></div><div class="amt">−100,000</div></div>
-    </div>
-  </main>
-  <aside class="side">
-    <div class="card"><h2>bridge <span class="mut">peg in · peg out</span></h2>
-      <div class="seg"><button class="on">peg in</button><button>peg out</button></div>
-      <div class="field"><label>from</label><select><option>txbt4 · your parent wallet (tb1p…) <span class="q">?</span></option></select></div>
-      <div class="field"><label>to chain</label><select><option>melchain</option><option>txbt4-evm</option><option>tally</option></select></div>
-      <div class="field"><label>amount</label><input value="1,000,000 sats"></div>
-      <div class="mut" style="font-size:.78rem;margin-bottom:.6rem">6 parent confirmations, then a claim, then 100 chain blocks to mature. The marker names your script on that chain.</div>
-      <button class="ac" style="width:100%">review peg-in</button>
-      <div class="note" style="margin-top:.6rem"><span class="q">?</span> a peg-in needs a parent wallet: is that your node's, a browser key on txbt4, or a paste-in PSBT?</div>
-    </div>
-    <div class="card"><h2>desk <span class="warn">paused until October</span></h2>
-      <div class="mut" style="font-size:.85rem">locked parent rewards pledged for sats now. Nothing to list for this key. The panel returns when the desk unpauses.</div>
-    </div>
-    <div class="card"><h2>market <span class="mut">tally pool</span></h2>
-      <div class="field"><label>you give</label><input value="10,000 sats"></div><div class="field"><label>you get</label><input value="≈ 9.87 TIDE"></div>
-      <button style="width:100%">swap (sketch)</button>
-      <div class="note" style="margin-top:.6rem"><span class="q">?</span> the tally market lives in play-grounds today; embed it, or link out?</div>
-    </div>
-  </aside>
+  <div class="top"><div><b>sidestr</b> <span class="pill">station</span></div><div class="mut" id="topright">opening…</div></div>
+  <nav class="rail"><a class="on" data-v="portfolio">Portfolio <span id="nchains"></span></a><a data-v="bridge">Bridge</a><a data-v="activity">Activity</a><a href="../tally/" target="_blank">Market ↗</a><a href="../ide/" target="_blank">Contracts ↗</a><a data-v="settings">Settings</a><div class="sp"></div><div class="who" id="who">one key, every chain</div></nav>
+  <main class="main" id="main"><div class="card"><div class="mut" id="boot">asking the relays which chains exist…</div></div></main>
+  <aside class="side" id="side"></aside>
 </div>
+<div id="modal" class="hidden"></div>
+<script type="module">
+import { listChains } from '../sidechains.mjs';
+import { openWallet, DEFAULTS } from 'https://cdn.jsdelivr.net/gh/sidestr/wallet@d480c3fcc10fc8e6d537113b8227cd01576f37e2/wallet.mjs';
+const $ = (id) => document.getElementById(id); const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+const LS = { get: (k) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} }, del: (k) => { try { localStorage.removeItem(k); } catch {} } };
+const sats = (n) => Number(n).toLocaleString('en-US'); const store = { get: LS.get, set: LS.set, delete: LS.del };
+const relays = (LS.get('sidestr_relays') ?? DEFAULTS.relays.join(',')).split(',').map((x) => x.trim()).filter(Boolean);
+const explore = (chainId, kind, id) => `https://sidestr.com/explorer/?chain=${encodeURIComponent(chainId)}#/${kind}/${id}`;
+const age = (t) => { if (!t) return '—'; const m = Math.round((Date.now() / 1000 - t) / 60); return m < 60 ? `${m} min` : m < 2880 ? `${Math.round(m / 60)} h` : `${Math.round(m / 1440)} d`; };
+let key = null, rows = [], wallets = new Map(), view = 'portfolio', evmBal = new Map();
+// one key for every chain: the first per-chain key this browser holds, else a new one, then set for each chain the plain and phone wallets know
+function pickKey() { key = LS.get('sidestr_station_key'); if (!key) for (const r of rows) { const k = LS.get(`sidestr_key:${r.id}`); if (k) { key = k; break; } } return key; }
+function adoptKey(k) { key = k; LS.set('sidestr_station_key', k); for (const r of rows) if (!LS.get(`sidestr_key:${r.id}`)) LS.set(`sidestr_key:${r.id}`, k); }
+window.station = { get wallets() { return wallets; }, get rows() { return rows; } };
+async function boot() {
+  try { rows = await listChains({ relays }); } catch (e) { $('boot').innerHTML = `<span class="err">could not read the relays: ${esc(e.message)}</span>`; return; }
+  $('nchains').textContent = rows.length; $('boot').textContent = `${rows.length} chains announced; opening each from its mirror…`;
+  const open = rows.filter((r) => r.mirror);
+  let done = 0; const worker = async () => { for (;;) { const r = open.shift(); if (!r) return; try { const w = await openWallet({ mirror: r.mirror, relays, store, onProgress: () => {} }); wallets.set(r.id, w); } catch (e) { r.err = e.message; } done++; const b = $('boot'); if (b) b.textContent = `${done} of ${rows.length} chains open…`; } };
+  await Promise.all([worker(), worker(), worker()]);
+  if (!pickKey()) { const w = wallets.values().next().value; if (w) adoptKey(w.newKey()); }
+  else adoptKey(key);
+  render(); refreshEvm();
+  for (const [id, w] of wallets) w.followTips(async (t) => { for (let i = 0; i < 6 && (w.tip?.height ?? -1) < t.tip; i++) { await new Promise((r) => setTimeout(r, 2500)); await w.refresh(); } if (view === 'portfolio' || view === 'activity') render(); refreshEvm(); });
+}
+async function refreshEvm() { for (const [id, w] of wallets) if (w.evm && key) { try { evmBal.set(id, Number((await w.evmBalance(w.ethAddress(key))) / 1000000000n)); } catch {} } if (view === 'portfolio') renderPortfolio(); }
+function me(w) { return w.identity(key); }
+function render() { document.querySelectorAll('.rail a[data-v]').forEach((a) => a.classList.toggle('on', a.dataset.v === view)); const w0 = wallets.values().next().value; $('topright').innerHTML = w0 ? `key <span class="mono">${esc(me(w0).address.slice(0, 14))}…</span> <span class="pill">${wallets.size} of ${rows.length} chains open</span>` : 'no chain could be opened'; $('who').innerHTML = w0 ? `one key, every chain<br><span class="mono">did:nostr:${esc(me(w0).pub.slice(0, 16))}…</span>` : '';
+  ({ portfolio: renderPortfolio, bridge: renderBridge, activity: renderActivity, settings: renderSettings })[view](); renderSide(); }
+function renderPortfolio() {
+  let total = 0, evmTotal = 0, tokens = 0; const held = [], others = [];
+  for (const r of rows) { const w = wallets.get(r.id); if (!w) { others.push({ r }); continue; } const m = me(w); const b = w.balance(m.script); total += b.total; const eb = evmBal.get(r.id) ?? null; if (eb) evmTotal += eb; const toks = (() => { try { return JSON.parse(LS.get(`sidestr_tokens:${r.id}`) ?? '[]').length; } catch { return 0; } })(); tokens += toks; (b.total > 0 || eb ? held : others).push({ r, w, b, eb, toks }); }
+  const row = ({ r, w, b, eb, toks }) => { const lb = r.lastBlock; const dot = !w ? 'bad' : (Date.now() / 1000 - lb) > 7200 ? 'warn' : ''; return `<tr><td><span class="dot ${dot}"></span><b>${esc(r.name)}</b>${r.rules?.length ? `<span class="tag">${esc(r.rules.join(', '))}</span>` : ''}${r.parent && !/blake2b|xbt/.test(r.parent) ? '<span class="tag">stock</span>' : ''}</td><td class="mut">${esc((r.parent ?? '').replace('btc:testnet4-blake2b', 'txbt4'))}</td><td class="r mono">${w ? sats(b.spendable) + (b.immature ? ` <span class="mut">+${sats(b.immature)}</span>` : '') : '<span class="bad">' + esc(r.err ?? 'no mirror') + '</span>'}</td><td class="r mono ${eb == null ? 'mut' : ''}">${w?.evm ? (eb == null ? '…' : sats(eb)) : '—'}</td><td class="mut">${toks || '—'}</td><td class="mut">${age(lb)}</td><td class="r">${w ? `<button class="sm" data-send="${esc(r.id)}">send</button> <button class="sm" data-recv="${esc(r.id)}">receive</button>${w.evm ? ` <button class="sm" data-dep="${esc(r.id)}">deposit</button>` : ''}` : ''}</td></tr>`; };
+  $('main').innerHTML = `<div class="stats"><div class="stat"><div class="k">across all chains</div><div class="v">${sats(total)}<small>sats</small></div></div><div class="stat"><div class="k">on EVM sides</div><div class="v">${sats(evmTotal)}<small>sats</small></div></div><div class="stat"><div class="k">token contracts</div><div class="v">${tokens}</div></div><div class="stat"><div class="k">chains open</div><div class="v">${wallets.size}<small>of ${rows.length}</small></div></div></div>
+    <div class="card"><h2>positions <span class="mut">chains you hold coins on first</span></h2><table><tr><th>chain</th><th>beside</th><th class="r">balance</th><th class="r">EVM side</th><th>tokens</th><th>last block</th><th></th></tr>${held.map(row).join('')}${held.length && others.length ? '<tr><td colspan="7" class="tiny">other chains</td></tr>' : ''}${others.map(row).join('')}</table></div>`;
+  document.querySelectorAll('[data-send]').forEach((b) => { b.onclick = () => sendModal(b.dataset.send); }); document.querySelectorAll('[data-recv]').forEach((b) => { b.onclick = () => receiveModal(b.dataset.recv); }); document.querySelectorAll('[data-dep]').forEach((b) => { b.onclick = () => sendModal(b.dataset.dep, 'deposit'); });
+}
+function renderActivity() { const all = []; for (const [id, w] of wallets) { const m = me(w); const byTx = new Map(); for (const h of w.history(m.script)) { const x = byTx.get(h.txid) ?? { height: h.height, txid: h.txid, net: 0, chain: id, name: w.chain.name, time: w.ex.blocks[h.height]?.time ?? null }; x.net += h.dir === 'in' ? h.value : -h.value; byTx.set(h.txid, x); } for (const x of byTx.values()) all.push({ ...x, kind: x.net >= 0 ? 'in' : 'out', value: Math.abs(x.net) }); if (w.evm) for (const r of w.evmActivity(w.ethAddress(key))) if (![...byTx.keys()].includes(r.sidechainTxid)) all.push({ height: r.height, txid: r.sidechainTxid, chain: id, name: w.chain.name, time: w.ex.blocks[r.height]?.time ?? null, kind: 'evm', evm: r }); }
+  all.sort((a, b) => (b.time ?? 0) - (a.time ?? 0) || b.height - a.height);
+  $('main').innerHTML = `<div class="card"><h2>activity <span class="mut">every chain, newest first</span></h2>${all.length ? all.slice(0, 60).map((x) => `<a class="act" href="${explore(x.chain, 'tx', x.txid)}" target="_blank" rel="noopener"><div class="ic ${x.kind === 'in' ? 'good' : ''}">${x.kind === 'evm' ? '⚙' : x.kind === 'in' ? '+' : '−'}</div><div class="t"><div>${x.kind === 'evm' ? 'EVM · ' + (x.evm.contractAddress ? 'deployed' : 'call to ' + (x.evm.to ?? '').slice(0, 10) + '…') + (x.evm.status === 1 ? '' : ' · reverted') : x.kind === 'in' ? 'received' : 'sent'} · ${esc(x.name)}</div><div>${x.time ? new Date(x.time * 1000).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' · ' : ''}block ${x.height} · ${esc(x.txid.slice(0, 10))}…</div></div><div class="amt ${x.kind === 'in' ? 'good' : ''}">${x.value == null ? '' : (x.kind === 'in' ? '+' : '−') + sats(x.value)}</div></a>`).join('') : '<div class="mut">nothing yet on any chain</div>'}</div>`; }
+// --- the bridge: peg in from this key's parent coins, peg out to this key's parent address ---
+let bridgeMode = 'in', parentCoins = null;
+async function renderBridge() {
+  const chains = [...wallets.values()]; const w0 = chains[0]; if (!w0) return ($('main').innerHTML = '<div class="card mut">no chain open</div>');
+  const paddr = w0.parentAddress(key); const withPeg = []; for (const w of chains) { try { await w.pegInScript(); withPeg.push(w); } catch {} }
+  $('main').innerHTML = `<div class="card"><h2>bridge <span class="mut">the same key on ${esc(w0.chain.parent)}: <span class="mono">${esc(paddr)}</span></span></h2>
+    <div class="seg"><button data-m="in" class="${bridgeMode === 'in' ? 'on' : ''}">peg in</button><button data-m="out" class="${bridgeMode === 'out' ? 'on' : ''}">peg out</button></div>
+    ${bridgeMode === 'in' ? `<div class="field"><label>your coins on the parent</label><div id="pcoins" class="mono">reading the parent explorer…</div></div>
+      <div class="field"><label>to chain (announcing a peg script)</label><select id="bchain">${withPeg.map((w) => `<option value="${esc(w.chain.id)}">${esc(w.chain.name)}</option>`).join('')}</select></div>${withPeg.length ? '' : '<div class="err">no open chain announces a peg script yet; producers announce it from spec 0.0.4</div>'}
+      <div class="field"><label>amount in sats</label><input id="bamt" inputmode="numeric" placeholder="100000"></div><div class="tiny">6 parent confirmations, then the claim; spendable 100 chain blocks later. Fee 2 sat/vB from your parent coins.</div>`
+    : `<div class="field"><label>from chain</label><select id="bchain">${chains.map((w) => `<option value="${esc(w.chain.id)}">${esc(w.chain.name)} · ${sats(w.balance(me(w).script).spendable)} sats</option>`).join('')}</select></div>
+      <div class="field"><label>to a ${esc(w0.chain.parent)} address</label><input id="bto" class="mono" value="${esc(paddr)}"></div><div class="field"><label>amount in sats (the peg holders pay it on the parent)</label><input id="bamt" inputmode="numeric" placeholder="10000"></div>`}
+    <div style="display:flex;gap:.5rem;margin-top:.6rem"><button class="ac" id="breview">review</button></div><div class="err" id="berr" style="margin-top:.4rem"></div><div id="bsheet" style="margin-top:.8rem"></div></div>`;
+  document.querySelectorAll('.seg button').forEach((b) => { b.onclick = () => { bridgeMode = b.dataset.m; renderBridge(); }; });
+  if (bridgeMode === 'in') { try { parentCoins = await w0.parentUtxos(paddr); const conf = parentCoins.filter((u) => u.confirmed); const el = $('pcoins'); if (el) el.innerHTML = conf.length ? `${sats(conf.reduce((s, u) => s + u.value, 0))} sats in ${conf.length} coin(s)${parentCoins.length > conf.length ? ` <span class="mut">(+${parentCoins.length - conf.length} unconfirmed)</span>` : ''} · <a href="${w0.parentAddressUrl(paddr)}" target="_blank" rel="noopener" class="mut">explorer</a>` : `none yet · a peg-out from any chain pays this address · <a href="${w0.parentAddressUrl(paddr)}" target="_blank" rel="noopener" class="mut">explorer</a>`; } catch (e) { const el = $('pcoins'); if (el) el.innerHTML = `<span class="bad">${esc(e.message)}</span>`; } }
+  $('breview').onclick = async () => { const err = $('berr'); err.textContent = ''; const w = wallets.get($('bchain')?.value); const amount = Number($('bamt').value.trim()); if (!w) return (err.textContent = 'pick a chain'); $('breview').disabled = true;
+    try { if (bridgeMode === 'in') { const b = await w.buildPegIn({ key, amount, utxos: parentCoins ?? undefined }); sheet($('bsheet'), `peg in ${sats(amount)} sats to ${w.chain.name}`, [['pays', b.pegAddress], ['marker names', me(w).address], ['inputs', `${b.inputs.length} coin(s)`], ['fee', `${sats(b.fee)} sats (${b.vsize} vB)`], ['change', `${sats(b.change)} sats`], ['parent txid', b.txid]], async (p) => { const txid = await w.publishParent(b.hex); p.innerHTML = `<span class="good">broadcast on ${esc(w.chain.parent)}: <a href="${w.parentTxUrl(txid)}" target="_blank" rel="noopener">${esc(txid.slice(0, 16))}…</a></span><div class="tiny">the claim appears on ${esc(w.chain.name)} after ${w.chain.pegConfirmations ?? 6} confirmations</div>`; }); }
+      else { const b = w.build({ key, to: $('bto').value.trim(), amount, pegout: true }); if (!w.verify(b, key)) throw new Error('signature did not verify'); sheet($('bsheet'), `peg out ${sats(amount)} sats from ${w.chain.name}`, [['to', $('bto').value.trim() + ' on ' + w.chain.parent], ['fee', `${sats(b.fee)} sats`], ['change', `${sats(b.change)} sats`], ...(b.note ? [['note', b.note]] : [])], async (p) => { const r = await w.publish(b.hex, relays); if (!r.accepted) throw new Error('no relay accepted it'); p.textContent = 'published; waiting for the block…'; for (let i = 0; i < 36; i++) { await new Promise((res) => setTimeout(res, 5000)); const m = await w.mined(b.txid); if (m) { p.innerHTML = `<span class="good">burned in block ${m.height}; the peg holders pay it on ${esc(w.chain.parent)} within the parent's next blocks</span>`; return; } } p.innerHTML = '<span class="warn">published, not yet mined</span>'; }); } }
+    catch (e) { err.textContent = e.message; } finally { $('breview').disabled = false; } };
+}
+function sheet(el, what, lines, onConfirm) { el.innerHTML = `<div class="card" style="background:var(--panel2)"><h2>review</h2><div style="font-weight:600;margin-bottom:.4rem">${esc(what)}</div>${lines.map(([k, v]) => `<div class="kv"><span class="mut">${esc(k)}</span><span class="${/^(0x|[a-z]+1p|[0-9a-f]{64})/.test(String(v)) ? 'mono' : ''}">${esc(v)}</span></div>`).join('')}<div style="display:flex;gap:.5rem;margin-top:.8rem"><button class="ac" id="sconfirm">confirm and send</button><button id="sback">back</button></div><div id="sprog" class="tiny" style="margin-top:.5rem"></div></div>`;
+  $('sback').onclick = () => { el.innerHTML = ''; }; $('sconfirm').onclick = async () => { $('sconfirm').disabled = true; $('sback').disabled = true; try { await onConfirm($('sprog')); setTimeout(() => { if (view === 'portfolio') render(); }, 1500); } catch (e) { $('sprog').innerHTML = `<span class="bad">${esc(e.message)}</span>`; $('sconfirm').disabled = false; $('sback').disabled = false; } }; }
+function modal(html) { const m = $('modal'); m.className = 'modal'; m.innerHTML = `<div class="card">${html}<div style="margin-top:.8rem"><button id="mclose">close</button></div></div>`; $('mclose').onclick = () => { m.className = 'hidden'; m.innerHTML = ''; render(); }; }
+function receiveModal(id) { const w = wallets.get(id); const m = me(w); modal(`<h2>receive on ${esc(w.chain.name)}</h2><div class="mono" style="margin:.4rem 0">${esc(m.address)}</div>${w.evm ? `<div class="tiny">EVM side, same key</div><div class="mono">${esc(w.ethAddress(key))}</div>` : ''}<div class="tiny" style="margin-top:.4rem">on ${esc(w.chain.parent)} the same key is <span class="mono">${esc(w.parentAddress(key))}</span></div>`); }
+function sendModal(id, mode = 'send') { const w = wallets.get(id); const m = me(w); modal(`<h2>${mode === 'deposit' ? 'move sats to your EVM side' : 'send from ' + esc(w.chain.name)}</h2>${mode === 'deposit' ? `<div class="tiny">credited to <span class="mono">${esc(w.ethAddress(key))}</span></div>` : `<div class="field"><label>to: a ${esc(w.hrp)}1p… address, a script, or a 0x address on the EVM side</label><input id="mto" class="mono"></div>`}<div class="field"><label>amount in sats · you have ${sats(w.balance(m.script).spendable)}</label><input id="mamt" inputmode="numeric"></div><button class="ac" id="mreview">review</button><div class="err" id="merr"></div><div id="msheet"></div>`);
+  $('mreview').onclick = async () => { const err = $('merr'); err.textContent = ''; const amount = Number($('mamt').value.trim()); const to = $('mto')?.value.trim(); try { let b, what, lines; if (mode === 'deposit') { b = w.build({ key, to: w.ethAddress(key), amount, evmDeposit: true }); what = `move ${sats(amount)} sats to the EVM side`; lines = [['fee', `${sats(b.fee)} sats`]]; } else if (/^0x[0-9a-fA-F]{40}$/.test(to)) { b = await w.buildEvm({ key, to, value: amount }); what = `send ${sats(amount)} gwei on the EVM side`; lines = [['to', to], ['gas', `${sats(b.gasUsed)} gwei`], ['carrier fee', `${sats(b.fee)} sats`]]; } else { b = w.build({ key, to, amount }); what = `send ${sats(amount)} sats`; lines = [['to', to], ['fee', `${sats(b.fee)} sats`], ['change', `${sats(b.change)} sats`]]; }
+      if (!w.verify(b, key)) throw new Error('signature did not verify'); sheet($('msheet'), what, lines, async (p) => { const r = await w.publish(b.hex, relays); if (!r.accepted) throw new Error('no relay accepted it'); p.textContent = 'published; waiting for the block…'; for (let i = 0; i < 36; i++) { await new Promise((res) => setTimeout(res, 5000)); const mm = await w.mined(b.txid); if (mm) { p.innerHTML = `<span class="good">mined in block ${mm.height}</span>`; refreshEvm(); return; } } p.innerHTML = '<span class="warn">published, not yet mined</span>'; }); } catch (e) { err.textContent = e.message; } }; }
+function renderSettings() { const w0 = wallets.values().next().value; $('main').innerHTML = `<div class="card"><h2>settings</h2><div class="field"><label>relays</label><input id="relays" value="${esc(relays.join(','))}"><button id="saverelays" style="margin-top:.4rem;width:auto">save and reload</button></div>
+  <div class="field" style="margin-top:.8rem"><label>this key · used on every chain · back it up</label><div class="mono">${esc(w0 ? me(w0).address : '')}</div><button id="showkey" style="width:auto;margin-top:.4rem">show the key</button><div id="keybox" class="mono hidden" style="margin-top:.4rem;user-select:all"></div><div class="field" style="margin-top:.6rem"><label>use another key (64 hex characters)</label><input id="impkey" class="mono" autocomplete="off"><button id="impgo" style="width:auto;margin-top:.4rem">switch</button><div class="err" id="imperr"></div></div></div>
+  <div class="field" style="margin-top:.8rem"><label>validation</label><div class="tiny">${[...wallets.values()].map((w) => `${esc(w.chain.name)}: ${w.fromCache === null ? 'every block' : 'from the saved state at ' + w.fromCache}`).join(' · ')}</div><button id="verifyall" style="width:auto;margin-top:.4rem">drop every saved state and validate everything again</button></div></div>`;
+  $('saverelays').onclick = () => { LS.set('sidestr_relays', $('relays').value.trim()); location.reload(); }; $('showkey').onclick = () => { $('keybox').textContent = key; $('keybox').classList.toggle('hidden'); };
+  $('impgo').onclick = () => { const v = $('impkey').value.trim().toLowerCase(); try { w0.identity(v); LS.set('sidestr_station_key', v); for (const r of rows) LS.set(`sidestr_key:${r.id}`, v); location.reload(); } catch (e) { $('imperr').textContent = e.message; } };
+  $('verifyall').onclick = async () => { for (const w of wallets.values()) await w.verifyFully(); location.reload(); }; }
+function renderSide() { const chains = [...wallets.values()]; const isPaused = (w) => !!(w.chain.pledge?.paused ?? w.chain.paused); const desk = chains.filter((w) => w.desk && !isPaused(w)); const paused = chains.filter((w) => w.desk && isPaused(w));
+  $('side').innerHTML = `<div class="card"><h2>bridge</h2><div class="tiny">peg in from your parent coins, peg out to your parent address</div><button class="ac" style="margin-top:.6rem" id="gobridge">open the bridge</button></div>
+    <div class="card"><h2>desk <span class="${desk.length ? 'good' : 'warn'}">${desk.length ? desk.length + ' open' : paused.length ? 'paused' : 'none'}</span></h2><div class="tiny">${desk.length ? 'locked parent rewards pledged for sats now: ' + desk.map((w) => esc(w.chain.name)).join(', ') + ' · in the plain wallet' : 'no desk is taking pledges right now'}</div></div>
+    <div class="card"><h2>market</h2><div class="tiny">the tally pool, in its own page</div><a href="../tally/" target="_blank" rel="noopener"><button style="margin-top:.6rem">open the market ↗</button></a></div>
+    <div class="card"><h2>chains</h2>${rows.map((r) => `<div class="kv"><span>${esc(r.name)}</span><span class="mut">${r.tip} · ${age(r.lastBlock)} · ${r.blocks24h}/day</span></div>`).join('')}</div>`;
+  $('gobridge').onclick = () => { view = 'bridge'; render(); }; }
+document.querySelectorAll('.rail a[data-v]').forEach((a) => { a.onclick = () => { view = a.dataset.v; render(); }; });
+boot();
+</script>
 </body>
 </html>
