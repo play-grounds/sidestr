@@ -37,6 +37,7 @@ button.cta { width:100%; font:inherit; font-weight:600; border:0; border-radius:
     <div id="form"></div></div>
   <div class="card"><div class="tabs"><button class="on" data-t="depth">depth</button><button data-t="tape">trades</button><button data-t="pos">positions</button></div><div id="bottom"></div></div>
 </div>
+<p class="tiny" style="text-align:center;padding:0 1rem 1.2rem">an exchange screen over the tally pool, every block validated here · <a href="../station/" style="color:var(--mut)">station</a> · <a href="../tally/" style="color:var(--mut)">pool page</a> · <a href="../" style="color:var(--mut)">directory</a> · <a href="../phone/?chain=sidestr:tally" style="color:var(--mut)">phone wallet</a></p>
 <script type="module">
 import { openMarket, DEFAULTS } from '../tally/market.mjs';
 const $ = (id) => document.getElementById(id); const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
