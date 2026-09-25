@@ -64,8 +64,17 @@ async function boot() {
   if (!pickKey()) { const w = wallets.values().next().value; if (w) adoptKey(w.newKey()); }
   else adoptKey(key);
   render(); refreshEvm();
-  for (const [id, w] of wallets) w.followTips(async (t) => { for (let i = 0; i < 6 && (w.tip?.height ?? -1) < t.tip; i++) { await new Promise((r) => setTimeout(r, 2500)); await w.refresh(); } if (view === 'portfolio' || view === 'activity') render(); refreshEvm(); });
+  followAllTips();
 }
+// one subscription per relay for every chain's tip announcements (kind 33333), dispatched by chain id: a subscription per
+// wallet would open relays × chains sockets, and relays cap connections per address, which then refuses our publishes
+function followAllTips() { const w0 = wallets.values().next().value; if (!w0) return; const { parseTip } = w0.announce; const verify = w0.nostr.verifyNostrEvent; const seen = new Set();
+  const connect = (url, backoff = 1000) => { let ws; try { ws = new WebSocket(url); } catch { return setTimeout(() => connect(url, Math.min(backoff * 2, 60000)), backoff); }
+    ws.onopen = () => { backoff = 1000; ws.send(JSON.stringify(['REQ', 'tips', { kinds: [33333], since: Math.floor(Date.now() / 1000) - 60 }])); };
+    ws.onmessage = async (m) => { let msg; try { msg = JSON.parse(m.data); } catch { return; } if (msg[0] !== 'EVENT' || !msg[2] || seen.has(msg[2].id)) return; seen.add(msg[2].id); let ok = false; try { ok = verify(msg[2]); } catch {} if (!ok) return; const t = parseTip(msg[2]); if (!t?.chainId) return; const w = wallets.get(t.chainId); if (!w || !w.announce.announcedBy(w.chain, t.pubkey) || (w.tip?.height ?? -1) >= t.tip) return;
+      for (let i = 0; i < 6 && (w.tip?.height ?? -1) < t.tip; i++) { await new Promise((r) => setTimeout(r, 2500)); await w.refresh().catch(() => {}); } if (view === 'portfolio' || view === 'activity') render(); refreshEvm(); };
+    ws.onclose = () => setTimeout(() => connect(url, Math.min(backoff * 2, 60000)), backoff); ws.onerror = () => {}; };
+  for (const url of relays) connect(url); }
 async function refreshEvm() { for (const [id, w] of wallets) if (w.evm && key) { try { evmBal.set(id, Number((await w.evmBalance(w.ethAddress(key))) / 1000000000n)); } catch {} } if (view === 'portfolio') renderPortfolio(); }
 function me(w) { return w.identity(key); }
 function render() { document.querySelectorAll('.rail a[data-v]').forEach((a) => a.classList.toggle('on', a.dataset.v === view)); const w0 = wallets.values().next().value; $('topright').innerHTML = w0 ? `key <span class="mono">${esc(me(w0).address.slice(0, 14))}…</span> <span class="pill">${wallets.size} of ${rows.length} chains open</span>` : 'no chain could be opened'; $('who').innerHTML = w0 ? `one key, every chain<br><span class="mono">did:nostr:${esc(me(w0).pub.slice(0, 16))}…</span>` : '';
