@@ -6,7 +6,7 @@ export const DEFAULTS = {
   cdn: 'https://cdn.jsdelivr.net/gh/bitcoin-desktop/schema@v0.0.27',
   lib: 'https://cdn.jsdelivr.net/gh/sidestr/spec@5223af24b6260d6acf922f3c8c3da69d5c335670/siding/lib',
   explorer: 'https://cdn.jsdelivr.net/gh/sidestr/explorer@799a74bf67f1578531428ef8ffb9668e1170245b/explorer.mjs',
-  wallet: 'https://cdn.jsdelivr.net/gh/sidestr/wallet@a80791976b42cd457182fc28b177488f85d2805d/wallet.mjs',
+  wallet: 'https://cdn.jsdelivr.net/gh/sidestr/wallet@623aa6cd08820e875369114ae7ebaf4b0bb5bbff/wallet.mjs',
   relays: ['wss://nos.lol', 'wss://relay.damus.io', 'wss://relay.primal.net', 'wss://nostr.mom', 'wss://nostr.oxtr.dev'],
 };
 const B = (n) => BigInt(n), N = (b) => Number(b);

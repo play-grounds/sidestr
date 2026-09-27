@@ -43,7 +43,7 @@ button { font:inherit; border:0; border-radius:10px; padding:.45rem .8rem; curso
 <div id="modal" class="hidden"></div>
 <script type="module">
 import { listChains } from '../sidechains.mjs';
-import { openWallet, DEFAULTS } from 'https://cdn.jsdelivr.net/gh/sidestr/wallet@a80791976b42cd457182fc28b177488f85d2805d/wallet.mjs';
+import { openWallet, DEFAULTS } from 'https://cdn.jsdelivr.net/gh/sidestr/wallet@623aa6cd08820e875369114ae7ebaf4b0bb5bbff/wallet.mjs';
 const $ = (id) => document.getElementById(id); const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const LS = { get: (k) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} }, del: (k) => { try { localStorage.removeItem(k); } catch {} } };
 const sats = (n) => Number(n).toLocaleString('en-US'); const store = { get: LS.get, set: LS.set, delete: LS.del };
@@ -55,14 +55,28 @@ let key = null, rows = [], wallets = new Map(), view = 'portfolio', evmBal = new
 function pickKey() { key = LS.get('sidestr_station_key'); if (!key) for (const r of rows) { const k = LS.get(`sidestr_key:${r.id}`); if (k) { key = k; break; } } return key; }
 function adoptKey(k) { key = k; LS.set('sidestr_station_key', k); for (const r of rows) if (!LS.get(`sidestr_key:${r.id}`)) LS.set(`sidestr_key:${r.id}`, k); }
 window.station = { get wallets() { return wallets; }, get rows() { return rows; } };
+// the chain list is remembered between visits, so the page paints at once and the relays are asked in the background;
+// chains open three at a time from their mirrors (the explorer resumes each from its cache) and the table fills in as they do
+const CHAINS_KEY = 'sidestr_station_chains';
+const opening = new Set();
+async function openRow(r) {
+  if (!r.mirror || wallets.has(r.id) || opening.has(r.id)) return; opening.add(r.id);
+  try { const w = await openWallet({ mirror: r.mirror, relays, store, onProgress: () => {} }); wallets.set(r.id, w); r.err = null; if (!key) { if (!pickKey()) adoptKey(w.newKey()); else adoptKey(key); } }
+  catch (e) { r.err = e.message; }
+  opening.delete(r.id); const b = $('boot'); if (b) b.textContent = `${wallets.size} of ${rows.length} chains open…`; if (view === 'portfolio' || view === 'activity') render();
+}
+async function openAll() { const q = rows.filter((r) => r.mirror && !wallets.has(r.id) && !opening.has(r.id)); const worker = async () => { for (;;) { const r = q.shift(); if (!r) return; await openRow(r); } }; await Promise.all([worker(), worker(), worker()]); }
+// the relays' list over the remembered one: rows are updated in place (an open wallet keeps its row), new chains are added,
+// a remembered chain the relays did not return this time is kept, since one slow relay is not a chain gone
+function reconcile(list) { const byId = new Map(rows.map((r) => [r.id, r])); const next = []; for (const n of list) { const o = byId.get(n.id); if (o) { Object.assign(o, n); next.push(o); } else next.push(n); } for (const r of rows) if (!next.includes(r)) next.push(r); rows = next; $('nchains').textContent = rows.length; }
 async function boot() {
-  try { rows = await listChains({ relays }); } catch (e) { $('boot').innerHTML = `<span class="err">could not read the relays: ${esc(e.message)}</span>`; return; }
-  $('nchains').textContent = rows.length; $('boot').textContent = `${rows.length} chains announced; opening each from its mirror…`;
-  const open = rows.filter((r) => r.mirror);
-  let done = 0; const worker = async () => { for (;;) { const r = open.shift(); if (!r) return; try { const w = await openWallet({ mirror: r.mirror, relays, store, onProgress: () => {} }); wallets.set(r.id, w); } catch (e) { r.err = e.message; } done++; const b = $('boot'); if (b) b.textContent = `${done} of ${rows.length} chains open…`; } };
-  await Promise.all([worker(), worker(), worker()]);
-  if (!pickKey()) { const w = wallets.values().next().value; if (w) adoptKey(w.newKey()); }
-  else adoptKey(key);
+  const remembered = (() => { try { const c = JSON.parse(LS.get(CHAINS_KEY) ?? 'null'); return c?.rows?.length ? c : null; } catch { return null; } })();
+  if (remembered) { rows = remembered.rows; $('nchains').textContent = rows.length; $('boot').textContent = `${rows.length} chains from your last visit (${age(remembered.at)} ago); opening each from its mirror while the relays answer…`; }
+  const fresh = (async () => { try { const list = await listChains({ relays }); reconcile(list); LS.set(CHAINS_KEY, JSON.stringify({ at: Math.floor(Date.now() / 1000), rows: list })); return list; } catch (e) { if (!remembered) $('boot').innerHTML = `<span class="err">could not read the relays: ${esc(e.message)}</span>`; return null; } })();
+  if (remembered) await openAll();
+  else { $('boot').textContent = 'asking the relays which chains exist…'; }
+  const list = await fresh; if (!list && !remembered) return;
+  if (list) { $('nchains').textContent = rows.length; await openAll(); }
   render(); refreshEvm();
   followAllTips();
 }
