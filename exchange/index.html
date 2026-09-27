@@ -46,7 +46,13 @@ const q = new URLSearchParams(location.search); const chainId = q.get('chain') ?
 const sats = (n) => Math.round(Number(n)).toLocaleString('en-US'); const px = (p) => Number(p).toLocaleString('en-US', { maximumFractionDigits: 2 });
 let m = null, pool = null, key = null, me = null, side = 'buy', tf = 'trade', bottom = 'depth', S = { amount: '' }, busy = false;
 window.exchange = { get market() { return m; } };
-async function boot() { try { m = await openMarket({ chain: chainId, relays, store: { get: LS.get, set: LS.set, delete: LS.del } }); } catch (e) { $('form').innerHTML = `<div class="err">could not open ${esc(chainId)}: ${esc(e.message)}</div>`; return; }
+// the mirror found last time is tried first, so a return visit skips the relay round trip; the wallet still judges it
+// against the signer's announcement, and if it fails the chain is found from the relays again
+async function boot() {
+  const store = { get: LS.get, set: LS.set, delete: LS.del }, mirrorKey = `sidestr_mirror:${chainId}`; const remembered = LS.get(mirrorKey);
+  try { m = await openMarket({ chain: chainId, mirror: remembered ?? undefined, relays, store }); }
+  catch (e) { if (!remembered) { $('form').innerHTML = `<div class="err">could not open ${esc(chainId)}: ${esc(e.message)}</div>`; return; } LS.del(mirrorKey); try { m = await openMarket({ chain: chainId, relays, store }); } catch (e2) { $('form').innerHTML = `<div class="err">could not open ${esc(chainId)}: ${esc(e2.message)}</div>`; return; } }
+  if (m.w.ex?.mirror) LS.set(mirrorKey, m.w.ex.mirror);
   pool = m.pools()[0] ?? null; key = LS.get(`sidestr_key:${m.chain.id}`); me = key ? m.w.identity(key) : null; render();
   m.w.followTips(async (t) => { for (let i = 0; i < 6 && (m.tip?.height ?? -1) < t.tip; i++) { await new Promise((r) => setTimeout(r, 2500)); await m.refresh(); } if (!busy) render(); }); }
 function render() { if (!pool) { $('form').innerHTML = `<div class="mut">no pool on ${esc(m.chain.name)} yet</div>`; return; } pool = m.pool(pool.id); const h = m.history(pool.id); const trades = h.filter((e) => e.kind === 'swap'); const now = Date.now() / 1000; const day = trades.filter((e) => e.time && e.time > now - 86400);

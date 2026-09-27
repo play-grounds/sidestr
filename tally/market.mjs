@@ -13,9 +13,9 @@ const B = (n) => BigInt(n), N = (b) => Number(b);
 export const FEE_PER_MILLE = 3n;      // the pool rule's fee on what comes in
 export const CARRIER_SATS = 1000;     // sats an asset output rides on (SPEC 12.1: at least one)
 
-export async function openMarket({ chain, mirror, relays = DEFAULTS.relays, cdn = DEFAULTS.cdn, lib = DEFAULTS.lib, explorer = DEFAULTS.explorer, wallet = DEFAULTS.wallet, loadJson, onProgress = () => {} } = {}) {
+export async function openMarket({ chain, mirror, relays = DEFAULTS.relays, cdn = DEFAULTS.cdn, lib = DEFAULTS.lib, explorer = DEFAULTS.explorer, wallet = DEFAULTS.wallet, loadJson, store, onProgress = () => {} } = {}) {
   const [{ openWallet }, records] = await Promise.all([import(wallet), import(`${lib}/records.mjs`)]);
-  const w = await openWallet({ chain, mirror, relays, cdn, lib, explorer, loadJson, onProgress });
+  const w = await openWallet({ chain, mirror, relays, cdn, lib, explorer, loadJson, store, onProgress }); // store: the explorer resumes from its validated-state cache
   if (!w.ex.rules?.pool || !w.ex.rules?.assets) throw new Error(`${w.chain.id} does not name the assets and pool rules; this page is for chains that do`);
   return new Market(w, records);
 }
