@@ -13,26 +13,136 @@
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <style>
-:root { --bg:#0b0e14; --panel:#11151d; --panel2:#171c26; --line:#1f2634; --text:#e6e9f0; --mut:#7d8597; --ac:#7c5cff; --good:#0ecb81; --bad:#f6465d; --warn:#f0b90b; --mono:ui-monospace,Menlo,Consolas,monospace }
-* { box-sizing:border-box } html,body { margin:0; background:var(--bg); color:var(--text); font:12px/1.4 -apple-system,Inter,Segoe UI,Roboto,sans-serif }
-a { color:var(--mut) } .mono { font-family:var(--mono) } .mut { color:var(--mut) } .good { color:var(--good) } .bad { color:var(--bad) } .warn { color:var(--warn) } .r { text-align:right } .tiny { font-size:.68rem; color:var(--mut) } .hidden { display:none }
-.top { display:flex; align-items:center; gap:1.4rem; padding:.45rem 1rem; border-bottom:1px solid var(--line); background:var(--panel); flex-wrap:wrap } .top b { font-size:.95rem } .brand { display:flex; align-items:baseline; gap:.4rem; padding-right:1rem; border-right:1px solid var(--line) }
-.pair { font-weight:700; font-size:1rem } .last { font-family:var(--mono); font-size:1.25rem; font-weight:700 } .tick { display:flex; gap:1.3rem; flex-wrap:wrap; align-items:center } .tick div { display:flex; flex-direction:column } .tick .k { font-size:.64rem; color:var(--mut) } .tick .v { font-family:var(--mono); font-weight:600 } #who { margin-left:auto }
-.ex { display:grid; grid-template-columns:270px minmax(0,1fr) 300px; gap:1px; background:var(--line); border-bottom:1px solid var(--line) } .col { background:var(--bg); min-width:0; display:flex; flex-direction:column } .panel { background:var(--panel); border-bottom:1px solid var(--line) } .panel:last-child { flex:1 }
-.ph { padding:.4rem .7rem; font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--mut); border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; gap:.5rem } .ph .sm { text-transform:none; letter-spacing:0 }
-.bkh, .bk { display:grid; grid-template-columns:1.1fr 1fr 1.1fr; gap:.4rem; padding:.14rem .7rem; font-family:var(--mono); font-size:.72rem } .bkh { color:var(--mut); font-family:inherit; font-size:.64rem; padding-top:.3rem } .bk { position:relative; cursor:default } .bk:hover { background:var(--panel2) } .bk span { position:relative; z-index:1 } .bk span:nth-child(2), .bk span:nth-child(3) { text-align:right } .bkh span:nth-child(2), .bkh span:nth-child(3) { text-align:right } .bk i { position:absolute; top:0; bottom:0; right:0; opacity:.13 } .ask i { background:var(--bad) } .bid i { background:var(--good) } .ask span:first-child { color:var(--bad) } .bid span:first-child { color:var(--good) }
-.mid { display:flex; justify-content:space-between; align-items:baseline; padding:.35rem .7rem; border-top:1px solid var(--line); border-bottom:1px solid var(--line); background:var(--panel2); font-family:var(--mono) } .mid b { font-size:1rem }
-.tp { display:grid; grid-template-columns:1fr 1fr 1fr; gap:.4rem; padding:.13rem .7rem; font-family:var(--mono); font-size:.7rem } .tp span:nth-child(2), .tp span:nth-child(3) { text-align:right } .tp:hover { background:var(--panel2) } #tape { overflow:auto; max-height:320px }
-.chartwrap { position:relative; padding:.4rem .4rem 0 } canvas { width:100%; display:block; background:var(--panel) } #hover { position:absolute; pointer-events:none; background:var(--panel2); border:1px solid var(--line); border-radius:6px; padding:.35rem .5rem; font-size:.7rem; font-family:var(--mono); white-space:nowrap; display:none; z-index:2 }
-.tabs { display:flex; gap:.1rem } .tabs button, .sm { font:inherit; font-size:.7rem; background:transparent; color:var(--mut); border:0; border-radius:4px; padding:.25rem .55rem; cursor:pointer } .tabs button.on, .sm.on { background:var(--panel2); color:var(--text) } #bottom { overflow:auto; max-height:300px }
-table { width:100%; border-collapse:collapse } th { text-align:left; font-size:.64rem; color:var(--mut); font-weight:500; padding:.3rem .7rem; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--panel) } td { padding:.26rem .7rem; border-bottom:1px solid var(--line); font-family:var(--mono); font-size:.72rem } tr:last-child td { border-bottom:0 }
-.order { padding:.7rem } .seg { display:flex; background:var(--panel2); border-radius:6px; padding:.14rem; margin-bottom:.6rem } .seg button { flex:1; background:transparent; color:var(--mut); padding:.42rem; border:0; border-radius:5px; font:inherit; font-weight:600; cursor:pointer } .seg button.on { background:var(--panel); color:var(--text) } .seg button.buy.on { color:var(--good) } .seg button.sell.on { color:var(--bad) } .seg button:disabled { opacity:.45; cursor:default }
-.field { display:flex; flex-direction:column; gap:.2rem; margin-bottom:.5rem } .field label { font-size:.66rem; color:var(--mut); display:flex; justify-content:space-between } input { font:inherit; background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:.5rem .6rem; width:100%; font-family:var(--mono) } input:focus { outline:1px solid var(--ac) }
-.pct { display:flex; gap:.3rem; margin:-.2rem 0 .5rem } .pct button { flex:1; font:inherit; font-size:.66rem; background:var(--panel2); color:var(--mut); border:1px solid var(--line); border-radius:5px; padding:.22rem; cursor:pointer } .pct button:hover { color:var(--text) }
-button.cta { width:100%; font:inherit; font-weight:700; border:0; border-radius:6px; padding:.65rem; cursor:pointer; color:#fff; background:var(--ac) } button.cta.buy { background:var(--good); color:#03261a } button.cta.sell { background:var(--bad); color:#fff } button.cta:disabled { opacity:.45; cursor:default }
-.kv { display:flex; justify-content:space-between; gap:.6rem; padding:.2rem 0; border-top:1px solid var(--line); font-size:.74rem } .kv:first-child { border-top:0 } .err { color:var(--bad); font-size:.76rem; margin-top:.4rem }
-.foot { text-align:center; padding:.6rem 1rem 1rem }
-@media (max-width:1000px) { .ex { grid-template-columns:1fr } .col.left { order:2 } .col.right { order:1 } .col.center { order:0 } #tape { max-height:200px } }
+:root{
+  --bg:#0a0c11; --panel:#10131b; --panel2:#161b26; --panel3:#1c2331;
+  --line:#1b2230; --line2:#273044;
+  --text:#e8ebf2; --mut:#788198; --faint:#4a5164;
+  --ac:#7c5cff; --good:#0ecb81; --bad:#f6465d; --warn:#f0b90b;
+  --good-dim:rgba(14,203,129,.12); --bad-dim:rgba(246,70,93,.12);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:-apple-system,Inter,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:12px/1.45 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:var(--mut);text-decoration:none} a:hover{color:var(--text)}
+.mono{font-family:var(--mono)} .mut{color:var(--mut)} .good{color:var(--good)} .bad{color:var(--bad)} .warn{color:var(--warn)}
+.r{text-align:right} .tiny{font-size:.68rem;color:var(--mut)}
+::selection{background:rgba(124,92,255,.35)}
+button{font-family:var(--sans)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:1px;border-radius:4px}
+
+/* ---------- top bar ---------- */
+.top{display:flex;align-items:center;gap:1.4rem;padding:.5rem 1rem;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap;position:sticky;top:0;z-index:20}
+.brand{display:flex;align-items:baseline;gap:.45rem;padding-right:1.2rem;border-right:1px solid var(--line)}
+.brand b{font-size:.95rem;letter-spacing:.02em}
+.tick{display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center}
+.tick>div{display:flex;flex-direction:column;min-width:0}
+.tick .k{font-size:.6rem;color:var(--mut);text-transform:uppercase;letter-spacing:.07em}
+.tick .v{font-family:var(--mono);font-weight:600;font-size:.78rem}
+.pair{font-weight:700;font-size:1rem}
+.last{font-family:var(--mono);font-size:1.32rem;font-weight:700;transition:color .25s}
+#who{margin-left:auto;display:flex;align-items:center;gap:.5rem}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--good);display:inline-block;box-shadow:0 0 6px rgba(14,203,129,.7)}
+.sim{font-size:.58rem;text-transform:uppercase;letter-spacing:.08em;color:var(--warn);border:1px solid rgba(240,185,11,.35);border-radius:4px;padding:.12rem .35rem}
+
+/* ---------- layout ---------- */
+.ex{display:grid;grid-template-columns:280px minmax(0,1fr) 318px;gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
+.col{background:var(--bg);min-width:0;display:flex;flex-direction:column}
+.panel{background:var(--panel);border-bottom:1px solid var(--line);display:flex;flex-direction:column}
+.panel:last-child{flex:1}
+.ph{padding:.44rem .75rem;font-size:.64rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex:none;min-height:30px}
+.ph .sm{text-transform:none;letter-spacing:0}
+
+/* ---------- order book ---------- */
+.bkh,.bk{display:grid;grid-template-columns:1.1fr 1fr 1.15fr;gap:.4rem;padding:.16rem .75rem;font-family:var(--mono);font-size:.72rem}
+.bkh{color:var(--mut);font-family:var(--sans);font-size:.6rem;text-transform:uppercase;letter-spacing:.06em;padding-top:.35rem}
+.bk{position:relative;cursor:default}
+.bk:hover{background:var(--panel2)}
+.bk span{position:relative;z-index:1}
+.bk span:nth-child(2),.bk span:nth-child(3),.bkh span:nth-child(2),.bkh span:nth-child(3){text-align:right}
+.bk i{position:absolute;top:1px;bottom:1px;right:0;opacity:.14;border-radius:2px;transition:width .45s ease}
+.ask i{background:var(--bad)} .bid i{background:var(--good)}
+.ask span:first-child{color:var(--bad)} .bid span:first-child{color:var(--good)}
+.mid{display:flex;justify-content:space-between;align-items:baseline;padding:.42rem .75rem;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--panel2);font-family:var(--mono)}
+.mid b{font-size:1.05rem;transition:color .25s}
+
+/* ---------- tape ---------- */
+.tp{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem;padding:.15rem .75rem;font-family:var(--mono);font-size:.7rem}
+.tp span:nth-child(2),.tp span:nth-child(3){text-align:right}
+.tp:hover{background:var(--panel2)}
+.tp.mine{background:rgba(124,92,255,.08)}
+#tape{overflow:auto;max-height:336px;flex:1}
+#tape::-webkit-scrollbar,#bottom::-webkit-scrollbar{width:8px;height:8px}
+#tape::-webkit-scrollbar-thumb,#bottom::-webkit-scrollbar-thumb{background:var(--line2);border-radius:4px}
+.flash-up{animation:fu .9s ease-out} .flash-dn{animation:fd .9s ease-out}
+@keyframes fu{0%{background:var(--good-dim)}100%{background:transparent}}
+@keyframes fd{0%{background:var(--bad-dim)}100%{background:transparent}}
+
+/* ---------- chart ---------- */
+.chartwrap{position:relative;padding:.35rem .4rem 0}
+canvas{width:100%;display:block;background:var(--bg);cursor:crosshair}
+#legend{position:absolute;top:.55rem;left:.9rem;font-family:var(--mono);font-size:.68rem;color:var(--mut);pointer-events:none;z-index:2;line-height:1.5}
+#legend b{color:var(--text)}
+.tabs{display:flex;gap:.15rem}
+.tabs button,.sm{font:inherit;font-size:.68rem;background:transparent;color:var(--mut);border:0;border-radius:4px;padding:.24rem .55rem;cursor:pointer;transition:color .15s}
+.tabs button:hover,.sm:hover{color:var(--text)}
+.tabs button.on,.sm.on{background:var(--panel2);color:var(--text)}
+#bottom{overflow:auto;max-height:296px;flex:1}
+
+/* ---------- tables ---------- */
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:.6rem;color:var(--mut);font-weight:500;padding:.32rem .75rem;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);text-transform:uppercase;letter-spacing:.06em;z-index:1}
+td{padding:.3rem .75rem;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:.72rem}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--panel2)}
+
+/* ---------- order form ---------- */
+.order{padding:.8rem .75rem}
+.seg{display:flex;background:var(--panel2);border-radius:7px;padding:.15rem;margin-bottom:.65rem;gap:.15rem}
+.seg button{flex:1;background:transparent;color:var(--mut);padding:.44rem;border:0;border-radius:5px;font:inherit;font-weight:600;cursor:pointer;transition:background .15s,color .15s}
+.seg button.on{background:var(--panel);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.35)}
+.seg button.buy.on{color:var(--good)}
+.seg button.sell.on{color:var(--bad)}
+.seg button:disabled{opacity:.38;cursor:default}
+.field{display:flex;flex-direction:column;gap:.25rem;margin-bottom:.55rem}
+.field label{font-size:.62rem;color:var(--mut);display:flex;justify-content:space-between;text-transform:uppercase;letter-spacing:.05em}
+.field label .mono{text-transform:none;letter-spacing:0}
+input{font:inherit;font-size:.86rem;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:.52rem .65rem;width:100%;font-family:var(--mono);transition:border-color .15s,box-shadow .15s}
+input:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px rgba(124,92,255,.18)}
+.pct{display:flex;gap:.3rem;margin:-.05rem 0 .6rem}
+.pct button{flex:1;font:inherit;font-size:.62rem;background:var(--panel2);color:var(--mut);border:1px solid var(--line);border-radius:5px;padding:.24rem;cursor:pointer;transition:color .15s,border-color .15s}
+.pct button:hover{color:var(--text);border-color:var(--mut)}
+button.cta{width:100%;font:inherit;font-weight:700;font-size:.83rem;border:0;border-radius:7px;padding:.7rem;cursor:pointer;color:#fff;background:var(--ac);transition:filter .15s,transform .05s}
+button.cta.buy{background:var(--good);color:#03261a}
+button.cta.sell{background:var(--bad);color:#fff}
+button.cta:hover:not(:disabled){filter:brightness(1.12)}
+button.cta:active:not(:disabled){transform:translateY(1px)}
+button.cta:disabled{opacity:.4;cursor:default}
+.kv{display:flex;justify-content:space-between;gap:.6rem;padding:.24rem 0;border-top:1px solid var(--line);font-size:.73rem}
+.kv:first-child{border-top:0}
+.err{color:var(--bad);font-size:.72rem;margin-top:.4rem;min-height:.9rem}
+
+/* ---------- toast ---------- */
+#toasts{position:fixed;right:1rem;bottom:1rem;display:flex;flex-direction:column;gap:.5rem;z-index:50}
+.toast{background:var(--panel3);border:1px solid var(--line2);border-left:3px solid var(--good);border-radius:8px;padding:.6rem .85rem;font-family:var(--mono);font-size:.72rem;box-shadow:0 8px 24px rgba(0,0,0,.5);animation:tin .25s ease-out;max-width:300px}
+.toast.sell{border-left-color:var(--bad)}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.toast.out{opacity:0;transform:translateY(8px);transition:all .3s}
+
+/* ---------- footer / responsive ---------- */
+.foot{text-align:center;padding:.7rem 1rem 1.1rem}
+@media (max-width:1020px){
+  .ex{grid-template-columns:1fr}
+  .col.center{order:0} .col.right{order:1} .col.left{order:2}
+  #tape{max-height:220px}
+  #who{margin-left:0}
+  #legend{font-size:.6rem;max-width:calc(100% - 7.5rem);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+
+.hidden { display:none }
 </style>
 </head>
 <body>
@@ -43,7 +153,7 @@ button.cta { width:100%; font:inherit; font-weight:700; border:0; border-radius:
     <div class="panel"><div class="ph">recent trades</div><div class="bkh"><span>price</span><span id="tpunit">size</span><span>time</span></div><div id="tape"></div></div>
   </div>
   <div class="col center">
-    <div class="panel"><div class="ph"><span id="ctitle">price</span><span id="ctl"><button class="sm" data-tf="trade">per trade</button><button class="sm" data-tf="3600">1h</button><button class="sm" data-tf="86400">1d</button></span></div><div class="chartwrap"><canvas id="chart" height="380"></canvas><div id="hover"></div></div><div class="tiny" id="chartnote" style="padding:.3rem .7rem .5rem"></div></div>
+    <div class="panel"><div class="ph"><span id="ctitle">price</span><span id="ctl"><button class="sm" data-tf="trade">per trade</button><button class="sm" data-tf="300">5m</button><button class="sm" data-tf="3600">1h</button><button class="sm" data-tf="86400">1d</button></span></div><div class="chartwrap"><canvas id="chart" height="400"></canvas><div id="legend"></div></div><div class="tiny" id="chartnote" style="padding:.3rem .7rem .5rem"></div></div>
     <div class="panel"><div class="ph"><div class="tabs"><button class="on" data-t="tape">trade history</button><button data-t="pos">positions</button><button data-t="depth">depth</button></div></div><div id="bottom"></div></div>
   </div>
   <div class="col right">
@@ -54,6 +164,7 @@ button.cta { width:100%; font:inherit; font-weight:700; border:0; border-radius:
     <div class="panel"><div class="ph">balances</div><div id="bal"></div></div>
   </div>
 </div>
+<div id="toasts"></div>
 <p class="tiny foot">an exchange screen over the tally pool, every block validated here · <a href="../station/">station</a> · <a href="../tally/">pool page</a> · <a href="../">directory</a> · <a href="../phone/?chain=sidestr:tally">phone wallet</a></p>
 <script type="module">
 import { openMarket, DEFAULTS } from '../tally/market.mjs';
@@ -76,7 +187,7 @@ function render() { if (!pool) { $('form').innerHTML = `<div class="mut">no pool
   const mid = pool.x / pool.y * 10 ** pool.decimals; const last = trades.length ? trades[trades.length - 1].price : mid; const prev = trades.length > 1 ? trades[trades.length - 2].price : last; const first24 = day.length ? day[0].price : null; const chg = first24 ? (last / first24 - 1) * 100 : null;
   $('tpair').textContent = `${pool.ticker} / sats`; const tl = $('tlast'); tl.textContent = px(last); tl.className = 'last ' + (last >= prev ? 'good' : 'bad'); $('tchg').innerHTML = chg == null ? '<span class="mut">—</span>' : `<span class="${chg >= 0 ? 'good' : 'bad'}">${chg >= 0 ? '+' : ''}${chg.toFixed(2)}%</span>`;
   $('thi').textContent = day.length ? px(Math.max(...day.map((e) => e.price))) : '—'; $('tlo').textContent = day.length ? px(Math.min(...day.map((e) => e.price))) : '—'; $('tvol').textContent = sats(day.reduce((s, e) => s + e.volume, 0)) + ' sats'; $('tpool').textContent = `${sats(2 * pool.x)} sats`; $('tblock').textContent = m.tip?.height ?? '…';
-  $('who').innerHTML = me ? `key <span class="mono">${esc(me.address.slice(0, 12))}…</span> · <a href="#" id="forget">forget</a>` : `<a href="#" id="mk">make a key</a> · <a href="#" id="imp">paste one</a>`;
+  $('who').innerHTML = `<span class="dot"></span>&nbsp;validated to block ${m.tip?.height ?? '…'} · ` + (me ? `key <span class="mono">${esc(me.address.slice(0, 12))}…</span> · <a href="#" id="forget">forget</a>` : `<a href="#" id="mk">make a key</a> · <a href="#" id="imp">paste one</a>`);
   if ($('forget')) $('forget').onclick = (e) => { e.preventDefault(); LS.del(`sidestr_key:${m.chain.id}`); key = null; me = null; render(); }; if ($('mk')) $('mk').onclick = (e) => { e.preventDefault(); key = m.w.newKey(); LS.set(`sidestr_key:${m.chain.id}`, key); me = m.w.identity(key); render(); }; if ($('imp')) $('imp').onclick = (e) => { e.preventDefault(); const v = prompt('key (64 hex characters)'); if (!v) return; try { m.w.identity(v.trim().toLowerCase()); key = v.trim().toLowerCase(); LS.set(`sidestr_key:${m.chain.id}`, key); me = m.w.identity(key); render(); } catch (err) { alert(err.message); } };
   renderBook(mid, last, prev); renderTape(trades); drawChart(trades); renderForm(); renderBalances(); renderBottom(h); }
 // --- the order book: the constant product read as a ladder. Buying the asset pushes the price up: to reach p the pool
@@ -89,30 +200,37 @@ function ladder() { const x = pool.x, y = pool.y, k = x * y, p0 = x / y, u = 10 
 function renderBook(mid, last, prev) { const { asks, bids } = ladder(); const max = Math.max(asks.at(-1).total, bids.at(-1).total, 1); $('bkunit').textContent = `size (${pool.ticker})`;
   const row = (r, cls) => `<div class="bk ${cls}" title="${cls === 'ask' ? 'buying' : 'selling'} up to here moves the price ${(Math.abs(r.price / mid - 1) * 100).toFixed(1)}%"><i style="width:${(r.total / max * 100).toFixed(1)}%"></i><span>${px(r.price)}</span><span>${m.fmt(pool.asset, Math.max(0, Math.round(r.size)))}</span><span>${sats(r.total)}</span></div>`;
   $('asks').innerHTML = asks.slice().reverse().map((r) => row(r, 'ask')).join(''); $('bids').innerHTML = bids.map((r) => row(r, 'bid')).join('');
-  $('midpx').innerHTML = `<span class="${last >= prev ? 'good' : 'bad'}">${px(last)}</span> <span class="tiny">${last >= prev ? '▲' : '▼'}</span>`; $('midnote').textContent = `mid ${px(mid)} · fee 0.3%`; }
-function renderTape(trades) { $('tpunit').textContent = `size (${pool.ticker})`; const t = trades.slice().reverse().slice(0, 40);
-  $('tape').innerHTML = t.length ? t.map((e) => `<div class="tp" title="block ${e.height}"><span class="${e.side === 'buy' ? 'good' : 'bad'}">${px(e.price)}</span><span>${m.fmt(pool.asset, Math.abs(e.dy))}</span><span class="mut">${e.time ? new Date(e.time * 1000).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '—'}</span></div>`).join('') : '<div class="tiny" style="padding:.5rem .7rem">no trades yet</div>'; }
+  $('midpx').innerHTML = `<span class="${last >= prev ? 'good' : 'bad'}">${px(last)}</span> <span class="tiny">${last >= prev ? '▲' : '▼'}</span>`; $('midnote').textContent = `mid ${px(mid)} · spread ${px(asks[0].price - bids[0].price)} · fee 0.3%`; }
+const mine = (txid) => { if (!me || !txid) return false; const t = m.w.ex.txs.get(txid); return !!t && t.tx.inputs.some((i) => m.w.ex.txs.get(i.prevout.txid)?.tx.outputs[i.prevout.vout]?.scriptPubKey === me.script); };
+let lastTapeTxid = null;
+function renderTape(trades) { $('tpunit').textContent = `size (${pool.ticker})`; const t = trades.slice().reverse().slice(0, 40); const flash = lastTapeTxid !== null && t[0] && t[0].txid !== lastTapeTxid; lastTapeTxid = t[0]?.txid ?? null;
+  $('tape').innerHTML = t.length ? t.map((e, i) => `<div class="tp${mine(e.txid) ? ' mine' : ''}${flash && i === 0 ? (e.side === 'buy' ? ' flash-up' : ' flash-dn') : ''}" title="block ${e.height}${mine(e.txid) ? ' · yours' : ''}"><span class="${e.side === 'buy' ? 'good' : 'bad'}">${px(e.price)}</span><span>${m.fmt(pool.asset, Math.abs(e.dy))}</span><span class="mut">${e.time ? new Date(e.time * 1000).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '—'}</span></div>`).join('') : '<div class="tiny" style="padding:.5rem .7rem">no trades yet</div>'; }
+function toast(msg, kind) { const el = document.createElement('div'); el.className = 'toast' + (kind === 'sell' ? ' sell' : ''); el.textContent = msg; $('toasts').appendChild(el); setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 350); }, 4200); }
 function renderBalances() { const el = $('bal'); if (!me) { el.innerHTML = '<div class="tiny" style="padding:.5rem .7rem">make or paste a key to see balances</div>'; return; } const b = m.balances(me.script); const s = m.w.balance(me.script);
   el.innerHTML = `<div class="kv" style="padding:.3rem .7rem"><span class="mut">sats</span><span class="mono">${sats(s.spendable)}${s.immature ? ` <span class="tiny">+${sats(s.immature)} immature</span>` : ''}</span></div>${m.assets().map((a) => `<div class="kv" style="padding:.3rem .7rem"><span class="mut">${esc(a.ticker)}${a.share ? ' <span class="tiny">pool share</span>' : ''}</span><span class="mono">${a.share ? sats(b.get(a.id) ?? 0) : m.fmt(a.id, b.get(a.id) ?? 0)}</span></div>`).join('')}`; }
 // --- chart: candles per trade, or per hour/day bucket; the mid price after each trade -------------------
-function drawChart(trades) { const c = $('chart'); const dpr = devicePixelRatio; const W = c.width = c.clientWidth * dpr, H = c.height = 380 * dpr; const ctx = c.getContext('2d'); ctx.clearRect(0, 0, W, H); document.querySelectorAll('#ctl button').forEach((b) => b.classList.toggle('on', b.dataset.tf === tf));
-  let candles = []; if (tf === 'trade') candles = trades.map((e) => ({ t: e.time, o: e.x / e.y * 10 ** pool.decimals, c: e.mid, h: Math.max(e.mid, e.x / e.y * 10 ** pool.decimals, e.price), l: Math.min(e.mid, e.x / e.y * 10 ** pool.decimals, e.price), v: e.volume }));
-  else { const w = Number(tf); const by = new Map(); for (const e of trades) { if (!e.time) continue; const b = Math.floor(e.time / w) * w; const k = by.get(b) ?? { t: b, o: e.x / e.y * 10 ** pool.decimals, c: e.mid, h: -Infinity, l: Infinity, v: 0 }; k.c = e.mid; k.h = Math.max(k.h, e.mid, e.price); k.l = Math.min(k.l, e.mid, e.price); k.v += e.volume; by.set(b, k); } candles = [...by.values()]; }
-  $('ctitle').textContent = `${pool.ticker} / sats · ${tf === 'trade' ? 'per trade' : tf === '3600' ? '1h' : '1d'}`; $('chartnote').textContent = candles.length ? `${trades.length} trade(s) · price in sats per ${pool.ticker} · volume in sats below` : 'no trades yet; the first swap draws the first candle';
-  if (!candles.length) return; const pad = 10 * dpr, right = 78 * dpr, bottomH = 54 * dpr, axisH = 18 * dpr; const lo = Math.min(...candles.map((k) => k.l)) * 0.998, hi = Math.max(...candles.map((k) => k.h)) * 1.002; const plotH = H - pad - bottomH - axisH; const y = (p) => pad + (hi - p) / (hi - lo || 1) * plotH; const n = Math.max(candles.length, 24); const cw = (W - pad - right) / n; const maxv = Math.max(...candles.map((k) => k.v), 1);
-  const lastK = candles[candles.length - 1], ly = y(lastK.c); ctx.font = `${10.5 * dpr}px ui-monospace, monospace`; ctx.strokeStyle = '#1f2634'; ctx.lineWidth = 1; ctx.fillStyle = '#7d8597';
-  for (let i = 0; i <= 5; i++) { const p = lo + (hi - lo) * i / 5; const yy = y(p); ctx.beginPath(); ctx.moveTo(pad, yy); ctx.lineTo(W - right, yy); ctx.stroke(); if (Math.abs(yy - ly) > 11 * dpr) ctx.fillText(px(p), W - right + 6 * dpr, yy + 4 * dpr); }
-  // time axis: as many labels as fit at 170px apart; times alone when every candle is on one day, else day and hour
+const TF_LABEL = { trade: 'per trade', 300: '5m', 3600: '1h', 86400: '1d' }; let chartGeom = null, hoverIdx = -1, hoverY = -1, lastTrades = [];
+function candlesFrom(trades) { const u = 10 ** pool.decimals; if (tf === 'trade') return trades.map((e) => { const o = e.x / e.y * u, c = e.mid; return { t: e.time, o, c, h: Math.max(o, c, e.price), l: Math.min(o, c, e.price), v: e.volume }; });
+  const w = Number(tf), by = new Map(); for (const e of trades) { if (!e.time) continue; const b = Math.floor(e.time / w) * w; const k = by.get(b) ?? { t: b, o: e.x / e.y * u, c: e.mid, h: -Infinity, l: Infinity, v: 0 }; k.c = e.mid; k.h = Math.max(k.h, e.mid, e.price); k.l = Math.min(k.l, e.mid, e.price); k.v += e.volume; by.set(b, k); } return [...by.values()]; }
+function drawChart(trades) { lastTrades = trades; const c = $('chart'), dpr = devicePixelRatio; const W = c.width = c.clientWidth * dpr, H = c.height = 400 * dpr; const ctx = c.getContext('2d'); ctx.clearRect(0, 0, W, H); document.querySelectorAll('#ctl button').forEach((b) => b.classList.toggle('on', b.dataset.tf === tf));
+  const candles = candlesFrom(trades); $('ctitle').textContent = `${pool.ticker} / sats · ${TF_LABEL[tf]}`; $('chartnote').textContent = candles.length ? `${trades.length} trade(s) · price in sats per ${pool.ticker} · volume in sats below` : 'no trades yet; the first swap draws the first candle';
+  if (!candles.length) { chartGeom = null; $('legend').innerHTML = ''; return; }
+  const pad = 12 * dpr, right = 80 * dpr, bottomH = 52 * dpr, axisH = 20 * dpr; const lo = Math.min(...candles.map((k) => k.l)) * 0.9985, hi = Math.max(...candles.map((k) => k.h)) * 1.0015; const plotH = H - pad - bottomH - axisH; const y = (p) => pad + (hi - p) / (hi - lo || 1) * plotH; const n = Math.max(candles.length, 24); const cw = (W - pad - right) / n; const maxv = Math.max(...candles.map((k) => k.v), 1); const lastK = candles[candles.length - 1], ly = y(lastK.c);
+  ctx.font = `${10.5 * dpr}px ui-monospace, monospace`; ctx.lineWidth = 1;
+  for (let i = 0; i <= 5; i++) { const p = lo + (hi - lo) * i / 5, yy = y(p); ctx.strokeStyle = '#161c29'; ctx.beginPath(); ctx.moveTo(pad, yy); ctx.lineTo(W - right, yy); ctx.stroke(); if (Math.abs(yy - ly) > 11 * dpr) { ctx.fillStyle = '#667085'; ctx.fillText(px(p), W - right + 7 * dpr, yy + 4 * dpr); } }
   const days = new Set(candles.filter((k) => k.t).map((k) => new Date(k.t * 1000).toDateString())); const fmtT = (t) => new Date(t * 1000).toLocaleString(undefined, tf === '86400' ? { month: 'short', day: 'numeric' } : days.size <= 1 ? { hour: '2-digit', minute: '2-digit' } : { month: 'short', day: 'numeric', hour: '2-digit' });
-  const ticks = Math.min(candles.length, Math.max(2, Math.floor((W - right) / (170 * dpr)))); for (let t = 0; t < ticks; t++) { const i = Math.round(t * (candles.length - 1) / Math.max(1, ticks - 1)); const k = candles[i]; const x = pad + (i + 0.5) * cw; ctx.strokeStyle = '#1f2634'; ctx.beginPath(); ctx.moveTo(x, pad); ctx.lineTo(x, H - axisH); ctx.stroke(); const label = k.t ? fmtT(k.t) : `#${i + 1}`; ctx.fillStyle = '#7d8597'; ctx.fillText(label, Math.max(pad, Math.min(x - 24 * dpr, W - right - 70 * dpr)), H - 5 * dpr); }
+  const ticks = Math.min(candles.length, Math.max(2, Math.floor((W - right) / (170 * dpr)))); for (let t = 0; t < ticks; t++) { const i = Math.round(t * (candles.length - 1) / Math.max(1, ticks - 1)); const x = pad + (i + 0.5) * cw; ctx.strokeStyle = '#131926'; ctx.beginPath(); ctx.moveTo(x, pad); ctx.lineTo(x, H - axisH); ctx.stroke(); ctx.fillStyle = '#667085'; ctx.fillText(candles[i].t ? fmtT(candles[i].t) : `#${i + 1}`, Math.max(pad, Math.min(x - 24 * dpr, W - right - 70 * dpr)), H - 6 * dpr); }
   if (days.size === 1) $('chartnote').textContent += ` · ${[...days][0].replace(/^\w+ /, '')}`;
-  chartGeom = { candles, pad, cw, right, lo, hi, y };
-  candles.forEach((k, i) => { const x = pad + (i + 0.5) * cw; const up = k.c >= k.o; ctx.strokeStyle = ctx.fillStyle = up ? '#0ecb81' : '#f6465d'; ctx.beginPath(); ctx.moveTo(x, y(k.h)); ctx.lineTo(x, y(k.l)); ctx.stroke(); const top = y(Math.max(k.o, k.c)), hgt = Math.max(2 * dpr, Math.abs(y(k.o) - y(k.c))); ctx.fillRect(x - cw * 0.32, top, cw * 0.64, hgt); ctx.fillStyle = up ? 'rgba(14,203,129,.35)' : 'rgba(246,70,93,.35)'; const vh = k.v / maxv * (bottomH - 10 * dpr); ctx.fillRect(x - cw * 0.32, H - axisH - 4 * dpr - vh, cw * 0.64, vh); });
-  ctx.setLineDash([4 * dpr, 4 * dpr]); ctx.strokeStyle = lastK.c >= lastK.o ? '#0ecb81' : '#f6465d'; ctx.beginPath(); ctx.moveTo(pad, ly); ctx.lineTo(W - right, ly); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle = lastK.c >= lastK.o ? '#0ecb81' : '#f6465d'; ctx.fillRect(W - right + 2 * dpr, ly - 8 * dpr, right - 4 * dpr, 16 * dpr); ctx.fillStyle = '#0b0e14'; ctx.fillText(px(lastK.c), W - right + 6 * dpr, ly + 4 * dpr); }
-let chartGeom = null;
-(() => { const c = $('chart'), hv = $('hover'); c.onmousemove = (e) => { if (!chartGeom) return; const r = c.getBoundingClientRect(); const xr = (e.clientX - r.left) * devicePixelRatio; const g = chartGeom; const i = Math.floor((xr - g.pad) / g.cw); const k = g.candles[i]; if (!k || xr < g.pad || xr > c.width - g.right) { hv.style.display = 'none'; return; }
-  hv.style.display = 'block'; hv.innerHTML = `${k.t ? new Date(k.t * 1000).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'block'}<br>O ${px(k.o)} &nbsp;C <span class="${k.c >= k.o ? 'good' : 'bad'}">${px(k.c)}</span><br>H ${px(k.h)} &nbsp;L ${px(k.l)}<br>vol ${sats(k.v)} sats`;
-  const left = e.clientX - r.left + 14, top = e.clientY - r.top + 14; hv.style.left = Math.min(left, r.width - 190) + 'px'; hv.style.top = Math.min(top, r.height - 80) + 'px'; }; c.onmouseleave = () => { hv.style.display = 'none'; }; })();
+  candles.forEach((k, i) => { const x = pad + (i + 0.5) * cw, up = k.c >= k.o; const col = up ? '#0ecb81' : '#f6465d'; ctx.strokeStyle = ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(x, y(k.h)); ctx.lineTo(x, y(k.l)); ctx.stroke(); const top = y(Math.max(k.o, k.c)); const hgt = Math.max(1.5 * dpr, Math.abs(y(k.o) - y(k.c))); ctx.fillRect(x - cw * 0.32, top, cw * 0.64, hgt); ctx.fillStyle = up ? 'rgba(14,203,129,.28)' : 'rgba(246,70,93,.28)'; const vh = k.v / maxv * (bottomH - 8 * dpr); ctx.fillRect(x - cw * 0.32, H - axisH - 2 * dpr - vh, cw * 0.64, vh); });
+  const upLast = lastK.c >= lastK.o; ctx.setLineDash([4 * dpr, 4 * dpr]); ctx.strokeStyle = upLast ? '#0ecb81' : '#f6465d'; ctx.beginPath(); ctx.moveTo(pad, ly); ctx.lineTo(W - right, ly); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle = upLast ? '#0ecb81' : '#f6465d'; ctx.fillRect(W - right + 2 * dpr, ly - 8.5 * dpr, right - 4 * dpr, 17 * dpr); ctx.fillStyle = '#0a0c11'; ctx.fillText(px(lastK.c), W - right + 7 * dpr, ly + 4 * dpr);
+  chartGeom = { candles, pad, cw, right, lo, hi, y, plotH, axisH, W, H, dpr };
+  const leg = (k) => `<b>O</b> ${px(k.o)} &nbsp;<b>H</b> ${px(k.h)} &nbsp;<b>L</b> ${px(k.l)} &nbsp;<b>C</b> <span class="${k.c >= k.o ? 'good' : 'bad'}">${px(k.c)}</span> &nbsp;<b>vol</b> ${sats(k.v)}`;
+  if (hoverIdx >= 0 && hoverIdx < candles.length) { const k = candles[hoverIdx]; const x = pad + (hoverIdx + 0.5) * cw; ctx.setLineDash([3 * dpr, 4 * dpr]); ctx.strokeStyle = 'rgba(230,233,240,.35)'; ctx.beginPath(); ctx.moveTo(x, pad); ctx.lineTo(x, H - axisH); ctx.stroke();
+    if (hoverY > pad && hoverY < pad + plotH) { const pr = hi - (hoverY - pad) / plotH * (hi - lo); ctx.beginPath(); ctx.moveTo(pad, hoverY); ctx.lineTo(W - right, hoverY); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle = '#2a3245'; ctx.fillRect(W - right + 2 * dpr, hoverY - 8.5 * dpr, right - 4 * dpr, 17 * dpr); ctx.fillStyle = '#e8ebf2'; ctx.fillText(px(pr), W - right + 7 * dpr, hoverY + 4 * dpr); } else ctx.setLineDash([]);
+    $('legend').innerHTML = `${k.t ? new Date(k.t * 1000).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'block'} &nbsp; ` + leg(k); }
+  else $('legend').innerHTML = leg(lastK); }
+(() => { const c = $('chart'); let raf = 0; c.addEventListener('mousemove', (e) => { if (!chartGeom) return; const r = c.getBoundingClientRect(), dpr = devicePixelRatio; const xr = (e.clientX - r.left) * dpr; hoverY = (e.clientY - r.top) * dpr; hoverIdx = Math.floor((xr - chartGeom.pad) / chartGeom.cw); if (hoverIdx < 0 || xr > c.width - chartGeom.right || hoverIdx >= chartGeom.candles.length) hoverIdx = -1; cancelAnimationFrame(raf); raf = requestAnimationFrame(() => drawChart(lastTrades)); });
+  c.addEventListener('mouseleave', () => { hoverIdx = -1; cancelAnimationFrame(raf); raf = requestAnimationFrame(() => drawChart(lastTrades)); }); })();
 // --- the order form: a market order is a swap, quoted by the rule's own arithmetic -------------------------
 function renderForm() { const sell = side === 'buy' ? 'sats' : 'asset';
   $('form').innerHTML = `<div class="field"><label><span>${side === 'buy' ? 'spend sats' : 'sell ' + esc(pool.ticker)}</span><span id="fbal"></span></label><input id="amt" inputmode="decimal" value="${esc(S.amount)}" placeholder="${side === 'buy' ? '100000' : '10.00'}" autocomplete="off"></div>
@@ -120,7 +238,7 @@ function renderForm() { const sell = side === 'buy' ? 'sats' : 'asset';
     <div class="tiny" style="margin-top:.6rem">a market order is a swap against the pool, checked here against the chain's rules before it is published; the price moves with your size</div>`;
   $('amt').oninput = () => { S.amount = $('amt').value; updateQuote(); }; document.querySelectorAll('.pct button').forEach((bt) => { bt.onclick = () => { if (!me) return; const bal = side === 'buy' ? m.w.balance(me.script).spendable : (m.balances(me.script).get(pool.asset) ?? 0); const part = Math.floor(bal * Number(bt.dataset.pct) / 100); S.amount = side === 'buy' ? String(part) : m.fmt(pool.asset, part).replace(/,/g, ''); $('amt').value = S.amount; updateQuote(); }; }); $('amt').onkeydown = (e) => { if (e.key === 'Enter' && !$('go').disabled) $('go').click(); };
   document.querySelectorAll('.seg button[data-side]').forEach((b) => { b.classList.toggle('on', b.dataset.side === side); b.onclick = () => { side = b.dataset.side; S.amount = ''; renderForm(); }; });
-  $('go').onclick = async () => { const built = updateQuote(); if (!built) return; busy = true; updateQuote(); const out = $('fout'); try { const b = m.buildSwap({ key, pool: pool.id, sell, amount: built.amt }); out.textContent = 'publishing…'; const r = await m.publish(b.hex, relays); if (!r.accepted) throw new Error('no relay accepted it'); out.textContent = 'published; waiting for the block…'; for (let i = 0; i < 36; i++) { await new Promise((res) => setTimeout(res, 5000)); const x = await m.mined(b.txid); if (x) { S.amount = ''; busy = false; render(); $('fout').innerHTML = `<span class="good">filled in block ${x.height}</span>`; return; } } out.innerHTML = '<span class="warn">published, not yet mined</span>'; } catch (e) { out.innerHTML = `<span class="bad">${esc(e.message)}</span>`; } busy = false; updateQuote(); };
+  $('go').onclick = async () => { const built = updateQuote(); if (!built) return; busy = true; updateQuote(); const out = $('fout'); try { const b = m.buildSwap({ key, pool: pool.id, sell, amount: built.amt }); out.textContent = 'publishing…'; const r = await m.publish(b.hex, relays); if (!r.accepted) throw new Error('no relay accepted it'); out.textContent = 'published; waiting for the block…'; for (let i = 0; i < 36; i++) { await new Promise((res) => setTimeout(res, 5000)); const x = await m.mined(b.txid); if (x) { S.amount = ''; busy = false; render(); $('fout').innerHTML = `<span class="good">filled in block ${x.height}</span>`; toast(`${side === 'buy' ? 'Buy' : 'Sell'} filled in block ${x.height} · ${side === 'buy' ? m.fmt(pool.asset, built.quote.out) + ' ' + pool.ticker : sats(built.quote.out) + ' sats'}`, side); return; } } out.innerHTML = '<span class="warn">published, not yet mined</span>'; } catch (e) { out.innerHTML = `<span class="bad">${esc(e.message)}</span>`; } busy = false; updateQuote(); };
   updateQuote(); }
 // only the quote lines and the button change as you type; the input stays where it is, with its focus
 function updateQuote() { const sell = side === 'buy' ? 'sats' : 'asset'; const bal = me ? (side === 'buy' ? m.w.balance(me.script).spendable : (m.balances(me.script).get(pool.asset) ?? 0)) : null; let quote = null, err = '';

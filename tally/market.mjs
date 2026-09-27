@@ -48,7 +48,7 @@ export class Market {
       if (!after) continue; const x = before?.x ?? 0, y = before?.y ?? 0, x2 = after.x, y2 = after.y; const dx = x2 - x, dy = y2 - y;
       const kind = !before ? 'open' : after.shares === before.shares ? 'swap' : after.shares > before.shares ? 'add' : 'remove';
       const price = kind === 'swap' && dy !== 0 ? Math.abs(dx / dy) * unit : x2 / y2 * unit;
-      out.push({ height: h, time: this.ex.blocks[h]?.time ?? null, kind, side: kind === 'swap' ? (dx > 0 ? 'buy' : 'sell') : null, x, y, x2, y2, dx, dy, price, volume: Math.abs(dx), mid: x2 / y2 * unit }); }
+      out.push({ height: h, time: this.ex.blocks[h]?.time ?? null, txid: after.outpoint ? String(after.outpoint).split(':')[0] : null, kind, side: kind === 'swap' ? (dx > 0 ? 'buy' : 'sell') : null, x, y, x2, y2, dx, dy, price, volume: Math.abs(dx), mid: x2 / y2 * unit }); }
     return out;
   }
   // the pool's depth: sats needed to move the mid price by each fraction, both ways, from the constant product
