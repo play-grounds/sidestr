@@ -51,6 +51,20 @@ export class Market {
       out.push({ height: h, time: this.ex.blocks[h]?.time ?? null, txid: after.outpoint ? String(after.outpoint).split(':')[0] : null, kind, side: kind === 'swap' ? (dx > 0 ? 'buy' : 'sell') : null, x, y, x2, y2, dx, dy, price, volume: Math.abs(dx), mid: x2 / y2 * unit }); }
     return out;
   }
+  // did this script sign the transaction (one of its inputs spends a coin of the script's)
+  signedBy(txid, script) { const t = this.ex.txs.get(txid); return !!t && t.tx.inputs.some((i) => this.ex.txs.get(i.prevout.txid)?.tx.outputs[i.prevout.vout]?.scriptPubKey === script); }
+  // a key's position in a pool's asset from its own swaps, average-cost basis: a buy adds what it paid (fee included) to the
+  // cost of what it got; a sell realises the difference between what it received and the average cost of what it sold.
+  // Asset held beyond what the swaps account for (received some other way) is reported as untracked and valued at the mark.
+  position(script, id) {
+    const p = this.pool(id); if (!p) return null; const u = 10 ** p.decimals; let qty = 0, cost = 0, realized = 0, trades = 0, volume = 0;
+    for (const e of this.history(id)) { if (e.kind !== 'swap' || !e.txid || !this.signedBy(e.txid, script)) continue; trades++; volume += e.volume;
+      const fee = this.ex.txs.get(e.txid)?.fee ?? 0; // the chain fee is part of the trade's cost too
+      if (e.side === 'buy') { cost += e.dx + fee; qty += -e.dy; }
+      else { const sold = e.dy, got = -e.dx - fee; const avg = qty > 0 ? cost / qty : 0; const take = Math.min(sold, qty); realized += got - avg * take; cost -= avg * take; qty -= take; } }
+    const held = this.balances(script).get(p.asset) ?? 0; const mark = p.x / p.y; const avg = qty > 0 ? cost / qty : null;
+    return { trades, volume, qty, held, untracked: Math.max(0, held - qty), avgEntry: avg == null ? null : avg * u, mark: mark * u, cost: Math.round(cost), value: Math.round(held * mark), unrealized: qty > 0 ? Math.round(qty * mark - cost) : 0, realized: Math.round(realized) };
+  }
   // the pool's depth: sats needed to move the mid price by each fraction, both ways, from the constant product
   depth(id, steps = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2]) { const p = this.pool(id); if (!p) return []; return steps.map((f) => ({ move: f, buySats: Math.round(p.x * (Math.sqrt(1 + f) - 1)), sellSats: Math.round(p.x * (1 - 1 / Math.sqrt(1 + f))) })); } // x' = x·√(1+f) moves the price by (1+f)
   // --- quotes (the rule's arithmetic, in integers, rounded to the pool) ------------------
