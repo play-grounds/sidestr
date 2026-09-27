@@ -5,8 +5,8 @@
 export const DEFAULTS = {
   cdn: 'https://cdn.jsdelivr.net/gh/bitcoin-desktop/schema@v0.0.27',
   lib: 'https://cdn.jsdelivr.net/gh/sidestr/spec@5223af24b6260d6acf922f3c8c3da69d5c335670/siding/lib',
-  explorer: 'https://cdn.jsdelivr.net/gh/sidestr/explorer@64439ca0e06d44086be9e0448808b50768189cff/explorer.mjs',
-  wallet: 'https://cdn.jsdelivr.net/gh/sidestr/wallet@623aa6cd08820e875369114ae7ebaf4b0bb5bbff/wallet.mjs',
+  explorer: 'https://cdn.jsdelivr.net/gh/sidestr/explorer@fd0583449058b16d48dc7662fe5f9089e7a4ef0e/explorer.mjs',
+  wallet: 'https://cdn.jsdelivr.net/gh/sidestr/wallet@4277480cb3be304e73780b1c543e26c2a10c4443/wallet.mjs',
   relays: ['wss://nos.lol', 'wss://relay.damus.io', 'wss://relay.primal.net', 'wss://nostr.mom', 'wss://nostr.oxtr.dev'],
 };
 const B = (n) => BigInt(n), N = (b) => Number(b);
