@@ -5,8 +5,8 @@
 export const DEFAULTS = {
   cdn: 'https://cdn.jsdelivr.net/gh/bitcoin-desktop/schema@v0.0.27',
   lib: 'https://cdn.jsdelivr.net/gh/sidestr/spec@5223af24b6260d6acf922f3c8c3da69d5c335670/siding/lib',
-  explorer: 'https://cdn.jsdelivr.net/gh/sidestr/explorer@fd0583449058b16d48dc7662fe5f9089e7a4ef0e/explorer.mjs',
-  wallet: 'https://cdn.jsdelivr.net/gh/sidestr/wallet@4277480cb3be304e73780b1c543e26c2a10c4443/wallet.mjs',
+  explorer: 'https://cdn.jsdelivr.net/gh/sidestr/explorer@583797aae4009db7b45dfd73735f006ec5273e8c/explorer.mjs',
+  wallet: 'https://cdn.jsdelivr.net/gh/sidestr/wallet@3ea11263c80508225642883f92821472d44b2590/wallet.mjs',
   relays: ['wss://nos.lol', 'wss://relay.damus.io', 'wss://relay.primal.net', 'wss://nostr.mom', 'wss://nostr.oxtr.dev'],
 };
 const B = (n) => BigInt(n), N = (b) => Number(b);
@@ -85,7 +85,8 @@ export class Market {
   // --- building -------------------------------------------------------------------------
   // one assembler for every kind: pays `outs` (each may carry assets), spends the named pool coin,
   // gathers my sats and asset coins, returns asset change to me, adds records, sizes the fee, signs
-  #assemble({ key, outs, poolIn = null, poolRecord = null, needAssets = new Map(), records = [], burn = new Set(), keepBurnRemainder = null }) {
+  // destroy: asset -> units the transaction carries in and does not tally onward (a merge or a redeem), beyond what `outs` assign
+  assemble({ key, outs, poolIn = null, poolRecord = null, needAssets = new Map(), records = [], burn = new Set(), keepBurnRemainder = null, destroy = new Map() }) {
     const w = this.w, k = w.ex.k, me = w.identity(key), rate = w.minFeeRate;
     const inputs = []; const used = new Set();
     const take = (c, prevout) => { if (used.has(c.outpoint)) return; used.add(c.outpoint); inputs.push({ coin: c, prevout, mine: prevout.scriptPubKey === me.script }); };
@@ -97,7 +98,7 @@ export class Market {
     // asset change: whatever the inputs carry beyond what the outs assign comes back to me on one output
     const layout = (fee) => {
       const list = outs.map((o) => ({ value: o.value, scriptPubKey: o.scriptPubKey, carry: new Map(o.carry ?? []) }));
-      const inC = carriedIn(), asg = assigned(); const change = new Map(); for (const [a, n] of inC) { const back = n - (asg.get(a) ?? 0); if (back > 0 && !burn.has(a)) change.set(a, back); else if (back > 0 && keepBurnRemainder?.asset === a && back - keepBurnRemainder.keep > 0) change.set(a, back - keepBurnRemainder.keep); }
+      const inC = carriedIn(), asg = assigned(); const change = new Map(); for (const [a, n] of inC) { const back = n - (asg.get(a) ?? 0) - (destroy.get(a) ?? 0); if (back > 0 && !burn.has(a)) change.set(a, back); else if (back > 0 && keepBurnRemainder?.asset === a && back - keepBurnRemainder.keep > 0) change.set(a, back - keepBurnRemainder.keep); }
       const inSats = inputs.reduce((s, i) => s + i.coin.value, 0); let satsBack = inSats - outValue - fee - (change.size ? CARRIER_SATS : 0);
       if (change.size) list.push({ value: CARRIER_SATS, scriptPubKey: me.script, carry: change });
       if (satsBack < 0) return null; if (satsBack > 0) list.push({ value: satsBack, scriptPubKey: me.script, carry: new Map() });
@@ -121,17 +122,17 @@ export class Market {
     return { tx, hex: k.codec.encodeHex('Transaction', tx), txid, fee, vsize: Math.ceil(k.codec.txWeight(tx) / 4), records: built.records, prevouts, inputs: inputs.length };
   }
   // the chain's own rules, on this transaction, in this page, before it leaves
-  check(tx, txid) { const r = this.rules; const view = new r.assets.CarryView(r.assets.carried); const a = r.assets.check(tx, txid, view); if (!a.ok) return { ok: false, rule: 'assets', error: a.error }; const p = r.pool.check(tx, txid, view); if (!p.ok) return { ok: false, rule: 'pool', error: p.error }; return { ok: true, kind: p.kind ?? (p.effect ? 'open' : a.issue ? 'issue' : 'transfer'), effect: p.effect ?? null }; }
+  check(tx, txid) { const r = this.rules; const view = new r.assets.CarryView(r.assets.carried); const a = r.assets.check(tx, txid, view); if (!a.ok) return { ok: false, rule: 'assets', error: a.error }; const p = r.pool.check(tx, txid, view); if (!p.ok) return { ok: false, rule: 'pool', error: p.error }; if (r.markets) { const scriptOf = (prev) => this.ex.utxo.get(`${prev.txid}:${prev.vout}`)?.output.scriptPubKey ?? null; const mk = r.markets.check(tx, txid, view, { height: (this.tip?.height ?? 0) + 1, scriptOf }); if (!mk.ok) return { ok: false, rule: 'markets', error: mk.error }; } return { ok: true, kind: p.kind ?? (p.effect ? 'open' : a.issue ? 'issue' : 'transfer'), effect: p.effect ?? null }; }
   buildIssue({ key, ticker, decimals = 0, supply }) {
     ticker = String(ticker).toUpperCase().trim(); if (!/^[A-Z0-9]{1,8}$/.test(ticker)) throw new Error('a ticker is 1 to 8 letters or digits'); decimals = Number(decimals); if (!(decimals >= 0 && decimals <= 8)) throw new Error('decimals 0 to 8'); supply = Number(supply); if (!(supply >= 1 && supply <= 2 ** 53 - 1)) throw new Error('supply is a whole number of units');
-    const me = this.w.identity(key); const b = this.#assemble({ key, outs: [{ value: CARRIER_SATS, scriptPubKey: me.script, carry: new Map([['self', supply]]) }], records: [`issue:${ticker}:${decimals}`] });
+    const me = this.w.identity(key); const b = this.assemble({ key, outs: [{ value: CARRIER_SATS, scriptPubKey: me.script, carry: new Map([['self', supply]]) }], records: [`issue:${ticker}:${decimals}`] });
     return { ...b, kind: 'issue', ticker, decimals, supply };
   }
-  buildTransfer({ key, asset, to, amount }) { const dest = this.w.resolveTo(to); amount = Number(amount); const b = this.#assemble({ key, outs: [{ value: CARRIER_SATS, scriptPubKey: dest.script, carry: new Map([[asset, amount]]) }], needAssets: new Map([[asset, amount]]) }); return { ...b, kind: 'transfer', asset, amount, note: dest.note }; }
+  buildTransfer({ key, asset, to, amount }) { const dest = this.w.resolveTo(to); amount = Number(amount); const b = this.assemble({ key, outs: [{ value: CARRIER_SATS, scriptPubKey: dest.script, carry: new Map([[asset, amount]]) }], needAssets: new Map([[asset, amount]]) }); return { ...b, kind: 'transfer', asset, amount, note: dest.note }; }
   buildOpen({ key, asset, sats, units }) {
     sats = Number(sats); units = Number(units); if (!(sats >= 1 && units >= 1)) throw new Error('a pool opens with sats and units'); const shares = N(this.R.isqrt(B(sats) * B(units))); if (shares < 1) throw new Error('too small to open');
     const me = this.w.identity(key);
-    const b = this.#assemble({ key, outs: [{ value: sats, scriptPubKey: '51', carry: new Map([[asset, units]]) }, { value: CARRIER_SATS, scriptPubKey: me.script, carry: new Map([['self', shares]]) }], poolRecord: 'pool:self:0', needAssets: new Map([[asset, units]]) });
+    const b = this.assemble({ key, outs: [{ value: sats, scriptPubKey: '51', carry: new Map([[asset, units]]) }, { value: CARRIER_SATS, scriptPubKey: me.script, carry: new Map([['self', shares]]) }], poolRecord: 'pool:self:0', needAssets: new Map([[asset, units]]) });
     return { ...b, kind: 'open', asset, sats, units, shares };
   }
   buildSwap({ key, pool, sell, amount }) {
@@ -139,19 +140,19 @@ export class Market {
     const outs = sell === 'sats'
       ? [{ value: p.x + amount, scriptPubKey: '51', carry: new Map([[p.asset, p.y - q.out]]) }, { value: CARRIER_SATS, scriptPubKey: me.script, carry: new Map([[p.asset, q.out]]) }]
       : [{ value: p.x - q.out, scriptPubKey: '51', carry: new Map([[p.asset, p.y + amount]]) }, { value: q.out, scriptPubKey: me.script, carry: new Map() }];
-    const b = this.#assemble({ key, outs, poolIn: p.outpoint, poolRecord: `pool:${p.id}:0`, needAssets: sell === 'sats' ? new Map() : new Map([[p.asset, amount]]) });
+    const b = this.assemble({ key, outs, poolIn: p.outpoint, poolRecord: `pool:${p.id}:0`, needAssets: sell === 'sats' ? new Map() : new Map([[p.asset, amount]]) });
     return { ...b, kind: 'swap', pool: p.id, sell, amount, quote: q };
   }
   buildAdd({ key, pool, sats }) {
     const p = this.pool(pool), q = this.quoteAdd({ pool, sats }); const me = this.w.identity(key);
-    const b = this.#assemble({ key, outs: [{ value: p.x + q.sats, scriptPubKey: '51', carry: new Map([[p.asset, p.y + q.asset]]) }, { value: CARRIER_SATS, scriptPubKey: me.script, carry: new Map([[p.id, q.shares]]) }], poolIn: p.outpoint, poolRecord: `pool:${p.id}:0`, needAssets: new Map([[p.asset, q.asset]]) });
+    const b = this.assemble({ key, outs: [{ value: p.x + q.sats, scriptPubKey: '51', carry: new Map([[p.asset, p.y + q.asset]]) }, { value: CARRIER_SATS, scriptPubKey: me.script, carry: new Map([[p.id, q.shares]]) }], poolIn: p.outpoint, poolRecord: `pool:${p.id}:0`, needAssets: new Map([[p.asset, q.asset]]) });
     return { ...b, kind: 'add', pool: p.id, quote: q };
   }
   buildRemove({ key, pool, shares }) {
     const p = this.pool(pool), q = this.quoteRemove({ pool, shares }); const me = this.w.identity(key);
     // the shares come in and are not tallied onward: destroyed, which is what a remove is; extra shares on the same coin come back
     const held = this.assetCoins(me.script, p.id).reduce((s, c) => s + c.carried.get(p.id), 0); shares = Number(shares); if (shares > held) throw new Error(`you hold ${held} shares`);
-    const b = this.#assemble({ key, outs: [{ value: p.x - q.sats, scriptPubKey: '51', carry: new Map([[p.asset, p.y - q.asset]]) }, { value: CARRIER_SATS + q.sats, scriptPubKey: me.script, carry: new Map([[p.asset, q.asset]]) }], poolIn: p.outpoint, poolRecord: `pool:${p.id}:0`, needAssets: new Map([[p.id, shares]]), burn: new Set([p.id]), keepBurnRemainder: { asset: p.id, keep: shares } });
+    const b = this.assemble({ key, outs: [{ value: p.x - q.sats, scriptPubKey: '51', carry: new Map([[p.asset, p.y - q.asset]]) }, { value: CARRIER_SATS + q.sats, scriptPubKey: me.script, carry: new Map([[p.asset, q.asset]]) }], poolIn: p.outpoint, poolRecord: `pool:${p.id}:0`, needAssets: new Map([[p.id, shares]]), burn: new Set([p.id]), keepBurnRemainder: { asset: p.id, keep: shares } });
     return { ...b, kind: 'remove', pool: p.id, quote: q };
   }
   publish(hex, relays) { return this.w.publish(hex, relays); }
