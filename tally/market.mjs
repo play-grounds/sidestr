@@ -4,9 +4,9 @@
 // Every dependency is pinned by full commit; chains are named by id, never by host.
 export const DEFAULTS = {
   cdn: 'https://cdn.jsdelivr.net/gh/bitcoin-desktop/schema@v0.0.27',
-  lib: 'https://cdn.jsdelivr.net/gh/sidestr/spec@5223af24b6260d6acf922f3c8c3da69d5c335670/siding/lib',
+  lib: 'https://cdn.jsdelivr.net/gh/sidestr/spec@f0323d7e8e5da8c0643bee59569d3c35a4af36f1/siding/lib',
   explorer: 'https://cdn.jsdelivr.net/gh/sidestr/explorer@583797aae4009db7b45dfd73735f006ec5273e8c/explorer.mjs',
-  wallet: 'https://cdn.jsdelivr.net/gh/sidestr/wallet@3ea11263c80508225642883f92821472d44b2590/wallet.mjs',
+  wallet: 'https://cdn.jsdelivr.net/gh/sidestr/wallet@c1c2702cb22e8cf1e5c571af7e37654630d2cfea/wallet.mjs',
   relays: ['wss://nos.lol', 'wss://relay.damus.io', 'wss://relay.primal.net', 'wss://nostr.mom', 'wss://nostr.oxtr.dev'],
 };
 const B = (n) => BigInt(n), N = (b) => Number(b);
