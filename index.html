@@ -40,7 +40,7 @@ main { max-width:1100px; margin:0 auto; padding:1.2rem }
 </main>
 <footer>
 <b>Get listed:</b> run <code>siding produce --relay wss://… --announce-mirror https://your-host/path</code> — the announcement names your mirror, and the mirror's <code>chain.json</code> must be signed by the announcing key. <code>?relay=wss://a,wss://b</code> reads other relays.
-<a href="https://github.com/sidestr/spec" target="_blank" rel="noopener">spec</a> · <a href="https://sidestr.com/explorer/" target="_blank" rel="noopener">explorer</a> · <a href="https://sidestr.com/wallet/" target="_blank" rel="noopener">wallet</a> · <a href="https://github.com/play-grounds/sidestr" target="_blank" rel="noopener">source</a>
+<a href="https://github.com/sidestr/spec" target="_blank" rel="noopener">spec</a> · <a href="https://sidestr.com/explorer/" target="_blank" rel="noopener">explorer</a> · <a href="https://sidestr.com/wallet/" target="_blank" rel="noopener">wallet</a> · <a href="station/">station</a> · <a href="exchange/">exchange</a> · <a href="markets/">markets</a> · <a href="https://github.com/play-grounds/sidestr" target="_blank" rel="noopener">source</a>
 </footer>
 <script type="module">
 import { listChains, DEFAULT_RELAYS } from './sidechains.mjs';
@@ -65,7 +65,7 @@ async function load() {
       <td class="r mono">${r.blocks24h}</td>
       <td class="mono hide-sm" title="${esc(r.signer)}">${short(r.signer)}${r.announcers > 1 ? ` <span class="bad" title="${r.announcers} keys announce this id; the newest wins">×${r.announcers}</span>` : ''}</td>
       <td class="mono">${r.mirror ? `<a href="${esc(r.mirror)}/chain.json" target="_blank" rel="noopener" title="${esc(r.note)}">${esc(r.mirror.replace(/^https?:\/\//, ''))}</a> <span class="ac">✓</span>` : `<span class="bad" title="${esc(r.note)}">no mirror vouched for</span>`}</td>
-      <td class="links">${r.mirror ? `<a href="${EXPLORER}?chain=${encodeURIComponent(r.id)}" target="_blank" rel="noopener">explorer ↗</a><a href="${WALLET}?chain=${encodeURIComponent(r.id)}" target="_blank" rel="noopener">wallet ↗</a>${r.rules.includes('pool') ? `<a href="tally/?chain=${encodeURIComponent(r.id)}">market ↗</a>` : ''}${r.desk ? `<a href="${WALLET}?chain=${encodeURIComponent(r.id)}#desk" target="_blank" rel="noopener">desk ↗</a>` : ''}` : ''}</td>
+      <td class="links">${r.mirror ? `<a href="${EXPLORER}?chain=${encodeURIComponent(r.id)}" target="_blank" rel="noopener">explorer ↗</a><a href="${WALLET}?chain=${encodeURIComponent(r.id)}" target="_blank" rel="noopener">wallet ↗</a>${r.rules.includes('pool') ? `<a href="tally/?chain=${encodeURIComponent(r.id)}">market ↗</a>` : ''}${r.rules.includes('markets') ? `<a href="markets/?chain=${encodeURIComponent(r.id)}">markets ↗</a>` : ''}${r.desk ? `<a href="${WALLET}?chain=${encodeURIComponent(r.id)}#desk" target="_blank" rel="noopener">desk ↗</a>` : ''}` : ''}</td>
     </tr>`).join('')}</tbody></table></div>`;
   } catch (e) { $('pill').textContent = 'failed'; $('app').innerHTML = `<div class="err">${esc(e.message)}</div>`; console.error(e); }
   finally { $('refresh').disabled = false; }
